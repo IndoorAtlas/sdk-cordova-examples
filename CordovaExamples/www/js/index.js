@@ -187,6 +187,7 @@ var cordovaExample = {
       streetViewControl: false
     };
     venuemap = new google.maps.Map(document.getElementById('googleMap'), mapProp);
+    cordovaExample.mapOverlay({regionId: IA_FLOORPLAN_ID});
   },
 
   // Sets an overlay to Google Maps specified by the floorplan coordinates and bearing

@@ -14,4 +14,4 @@ var IA_API_KEY = '';
 var IA_API_SECRET = '';
 
 // Floorplan ID https://developer.indooratlas.com/venues
-var IA_FLOORPLAN_ID = null;
+var IA_FLOORPLAN_ID = '';

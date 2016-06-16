@@ -34,8 +34,7 @@ under the License.
   <title>Cordova Examples</title>
 </head>
 
-<!-- Loads the mapOverlay function after body has been loaded -->
-<body onload="cordovaExample.mapOverlay({regionId: IA_FLOORPLAN_ID});">
+<body>
   <div id="googleMap" style="position:absolute;top:0;left:0;right:0;bottom:0;"></div>
 
   <div id="actions" class="demoaction">
@@ -64,6 +63,7 @@ under the License.
 
   <!-- This class helps to rotate the overlay for Google Maps -->
   <script type="text/javascript" src="js/ClassForMapOverlay.js"></script>
+
   <!-- Functionality of the app -->
   <script type="text/javascript" src="js/index.js"></script>
 
@@ -72,9 +72,7 @@ under the License.
   <!-- Script to set up the API Keys for function calls -->
   <script>
   var setPositionButton = document.getElementById('setPositionButton');
-
-    setPositionButton.onclick = function() {cordovaExample.setPosition({regionId: IA_FLOORPLAN_ID});};
-  
+  setPositionButton.onclick = function() {cordovaExample.setPosition({regionId: IA_FLOORPLAN_ID});};
   </script>
 </body>
 </html>
