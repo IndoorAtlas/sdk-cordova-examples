@@ -108,25 +108,26 @@ var cordovaExample = {
   setPosition: function(options) {
     // Check if the floorplan is set
     if (IA_FLOORPLAN_ID != null) {
+
       alert("Setting location with floorplan ID: " + IA_FLOORPLAN_ID);
+
+      try {
+        SpinnerPlugin.activityStart('Setting location');
+        var win = function() {
+          SpinnerPlugin.activityStop();
+          cordovaExample.startRegionWatch();
+        };
+        var fail = function(error) {
+          SpinnerPlugin.activityStop();
+          alert(error.message);
+        };
+        IndoorAtlas.setPosition(win, fail, options);
+      }
+      catch(error) {
+        alert(error);
+      }
     } else {
       alert("Floorplan ID is not set");
-    }
-
-    try {
-      SpinnerPlugin.activityStart('Setting location');
-      var win = function() {
-        SpinnerPlugin.activityStop();
-        cordovaExample.startRegionWatch();
-      };
-      var fail = function(error) {
-        SpinnerPlugin.activityStop();
-        alert(error.message);
-      };
-      IndoorAtlas.setPosition(win, fail, options);
-    }
-    catch(error) {
-      alert(error);
     }
   },
   // Starts positioning the user in the given floorplan area
