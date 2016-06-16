@@ -107,7 +107,7 @@ var cordovaExample = {
   // Sets position of the location
   setPosition: function(options) {
     // Check if the floorplan is set
-    if (IA_FLOORPLAN_ID != '') {
+    if (IA_FLOORPLAN_ID != "") {
 
       alert("Setting location with floorplan ID: " + IA_FLOORPLAN_ID);
 
