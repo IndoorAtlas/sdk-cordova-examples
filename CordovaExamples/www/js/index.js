@@ -200,9 +200,6 @@ var cordovaExample = {
         // Set position and map overlay
         cordovaExample.setMapOverlay(floorplan);
 
-        // After the overlay is set, starts positioning the user
-        cordovaExample.startPositioning();
-        cordovaExample.startRegionWatch();
       };
       var fail = function(error) {
         SpinnerPlugin.activityStop();

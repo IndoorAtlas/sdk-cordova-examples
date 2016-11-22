@@ -39,8 +39,8 @@ under the License.
 
   <div id="actions" class="demoaction">
     <button class="demobutton" id="setPositionButton">Set Position</button>
-    <button class="demobutton" id="startPositioningButton" onclick="cordovaExample.startPositioning()">Start</button>
-    <button class="demobutton" id="stopPositioningButton" onclick="cordovaExample.stopPositioning()">Stop</button>
+    <button class="demobutton" id="startPositioningButton">Start</button>
+    <button class="demobutton" id="stopPositioningButton">Stop</button>
   </div>
 
   <div id="watchlog" class="demowatch"><div class="centerText">-</div></div>
@@ -72,7 +72,31 @@ under the License.
   <!-- Script to set up the API Keys for function calls -->
   <script>
   var setPositionButton = document.getElementById('setPositionButton');
-  setPositionButton.onclick = function() {cordovaExample.setPosition({regionId: IA_FLOORPLAN_ID});};
+  var startPositioningButton = document.getElementById('startPositioningButton');
+  var stopPositioningButton = document.getElementById('stopPositioningButton');
+  stopPositioningButton.disabled = true;
+  stopPositioningButton.style.background = '#D3D3D3';
+  setPositionButton.onclick = function() {
+    cordovaExample.setPosition({regionId: IA_FLOORPLAN_ID});
+  };
+  startPositioningButton.onclick = function() {
+    startPositioningButton.disabled = true;
+    startPositioningButton.style.background = '#D3D3D3';
+    setPositionButton.disabled = true;
+    setPositionButton.style.background = '#D3D3D3';
+    stopPositioningButton.disabled = false;
+    stopPositioningButton.style.background = '#00A5F6';
+    cordovaExample.startPositioning();
+  };
+  stopPositioningButton.onclick = function() {
+    startPositioningButton.disabled = false;
+    startPositioningButton.style.background = '#00A5F6';
+    setPositionButton.disabled = false;
+    setPositionButton.style.background = '#00A5F6';
+    stopPositioningButton.disabled = true;
+    stopPositioningButton.style.background = '#D3D3D3';
+    cordovaExample.stopPositioning();
+  };
   </script>
 </body>
 </html>
