@@ -69,7 +69,7 @@ var cordovaExample = {
   // Configures IndoorAtlas SDK with API Key and Secret
   // Set the API Keys in www/js/APIKeys.js
   configureIA: function() {
-    var _config = {key: IA_API_KEY, secret: IA_API_SECRET};
+    var _config = {key : IA_API_KEY, secret : IA_API_SECRET};
     IndoorAtlas.initialize(this.IAServiceConfigured, this.IAServiceFailed, _config);
     return false;
   },
@@ -86,17 +86,17 @@ var cordovaExample = {
     // Show a map centered at (position.coords.latitude, position.coords.longitude).
     SpinnerPlugin.activityStop();
     try {
-      var center = {lat: position.coords.latitude, lng: position.coords.longitude};
+      var center = {lat : position.coords.latitude, lng : position.coords.longitude};
       if (this.marker != null) {
         this.marker.setPosition(center);
       }
       else {
         this.marker = new google.maps.Marker({
-          position: center,
-          map: venuemap,
-          icon: image,
-          zIndex: google.maps.Marker.MAX_ZINDEX + 1,
-          optimized: false
+          position : center,
+          map : venuemap,
+          icon : image,
+          zIndex : google.maps.Marker.MAX_ZINDEX + 1,
+          optimized : false
         });
       }
       venuemap.panTo(center);
@@ -109,7 +109,7 @@ var cordovaExample = {
     // Check if the floorplan is set
     if (IA_FLOORPLAN_ID != "") {
 
-      alert("Setting location with floorplan ID: " + IA_FLOORPLAN_ID);
+      alert("Setting location with floor plan ID: " + IA_FLOORPLAN_ID);
 
       try {
         SpinnerPlugin.activityStart('Setting location');
@@ -127,7 +127,7 @@ var cordovaExample = {
         alert(error);
       }
     } else {
-      alert("Floorplan ID is not set");
+      alert("Floor plan ID is not set");
     }
   },
   // Starts positioning the user in the given floorplan area
@@ -172,23 +172,23 @@ var cordovaExample = {
   },
   // Initializes Google Maps with the given properties
   initializeMap: function() {
-    image ={
-      path: google.maps.SymbolPath.CIRCLE,
-      fillColor: '#00A5F6',
-      fillOpacity: 1.0,
-      scale: 6.0,
-      strokeColor: '#00A5F6',
-      strokeWeight: 1
+    image = {
+      path : google.maps.SymbolPath.CIRCLE,
+      fillColor : '#1681FB',
+      fillOpacity : 1.0,
+      scale : 6.0,
+      strokeColor : '#1681FB',
+      strokeWeight : 1
     };
     var mapProp = {
-      center: new google.maps.LatLng(65.060848804763, 25.4410770535469),
-      zoom: 15,
-      mapTypeId: google.maps.MapTypeId.ROADMAP,
-      mapTypeControl: false,
-      streetViewControl: false
+      center : new google.maps.LatLng(65.060848804763, 25.4410770535469),
+      zoom : 15,
+      mapTypeId : google.maps.MapTypeId.ROADMAP,
+      mapTypeControl : false,
+      streetViewControl : false
     };
     venuemap = new google.maps.Map(document.getElementById('googleMap'), mapProp);
-    cordovaExample.mapOverlay({regionId: IA_FLOORPLAN_ID});
+    cordovaExample.mapOverlay({regionId : IA_FLOORPLAN_ID});
   },
 
   // Sets an overlay to Google Maps specified by the floorplan coordinates and bearing
@@ -219,8 +219,8 @@ var cordovaExample = {
     // Needed to calculate the coordinates for floorplan that has not yet been rotated
     var center = floorplan.center;
     var pixelsToMeters = floorplan.pixelsToMeters;
-    var heightForCoordinates = floorplan.bitmapHeight/2;
-    var widthForCoordinates = floorplan.bitmapWidth/2;
+    var heightForCoordinates = floorplan.bitmapHeight / 2;
+    var widthForCoordinates = floorplan.bitmapWidth / 2;
 
     // Amount of meters of how much the coordinates have to be moved from the centre.
     var metersHorizontal = widthForCoordinates * pixelsToMeters;
@@ -234,8 +234,8 @@ var cordovaExample = {
     var latitudes = metersVertical / lengths.degreeOfLatitudeInMeters;
 
     // Calculate the new south-west and north-east coordinates
-    var swCoords = new google.maps.LatLng({lat: center[1] - latitudes, lng: center[0] - longitudes});
-    var neCoords = new google.maps.LatLng({lat: center[1] + latitudes, lng: center[0] + longitudes});
+    var swCoords = new google.maps.LatLng({lat : center[1] - latitudes, lng : center[0] - longitudes});
+    var neCoords = new google.maps.LatLng({lat : center[1] + latitudes, lng : center[0] + longitudes});
 
     // Get the bound of the unrotated image
     var bounds = new google.maps.LatLngBounds(swCoords , neCoords);

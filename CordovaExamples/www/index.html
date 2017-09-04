@@ -77,7 +77,7 @@ under the License.
   stopPositioningButton.disabled = true;
   stopPositioningButton.style.background = '#D3D3D3';
   setPositionButton.onclick = function() {
-    cordovaExample.setPosition({regionId: IA_FLOORPLAN_ID});
+    cordovaExample.setPosition({regionId : IA_FLOORPLAN_ID});
   };
   startPositioningButton.onclick = function() {
     startPositioningButton.disabled = true;
@@ -85,14 +85,14 @@ under the License.
     setPositionButton.disabled = true;
     setPositionButton.style.background = '#D3D3D3';
     stopPositioningButton.disabled = false;
-    stopPositioningButton.style.background = '#00A5F6';
+    stopPositioningButton.style.background = '#1681FB';
     cordovaExample.startPositioning();
   };
   stopPositioningButton.onclick = function() {
     startPositioningButton.disabled = false;
-    startPositioningButton.style.background = '#00A5F6';
+    startPositioningButton.style.background = '#1681FB';
     setPositionButton.disabled = false;
-    setPositionButton.style.background = '#00A5F6';
+    setPositionButton.style.background = '#1681FB';
     stopPositioningButton.disabled = true;
     stopPositioningButton.style.background = '#D3D3D3';
     cordovaExample.stopPositioning();
