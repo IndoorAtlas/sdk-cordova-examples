@@ -104,32 +104,6 @@ var cordovaExample = {
     catch(error) {alert(error)};
   },
 
-  // Sets position of the location
-  setPosition: function(options) {
-    // Check if the floorplan is set
-    if (IA_FLOORPLAN_ID != "") {
-
-      alert("Setting location with floor plan ID: " + IA_FLOORPLAN_ID);
-
-      try {
-        SpinnerPlugin.activityStart('Setting location');
-        var win = function() {
-          SpinnerPlugin.activityStop();
-          cordovaExample.startRegionWatch();
-        };
-        var fail = function(error) {
-          SpinnerPlugin.activityStop();
-          alert(error.message);
-        };
-        IndoorAtlas.setPosition(win, fail, options);
-      }
-      catch(error) {
-        alert(error);
-      }
-    } else {
-      alert("Floor plan ID is not set");
-    }
-  },
   // Starts positioning the user in the given floorplan area
   startPositioning: function() {
     SpinnerPlugin.activityStart('Move around to get a location');
@@ -188,7 +162,6 @@ var cordovaExample = {
       streetViewControl : false
     };
     venuemap = new google.maps.Map(document.getElementById('googleMap'), mapProp);
-    cordovaExample.mapOverlay({regionId : IA_FLOORPLAN_ID});
   },
 
   // Sets an overlay to Google Maps specified by the floorplan coordinates and bearing
@@ -227,11 +200,11 @@ var cordovaExample = {
     var metersVertical = heightForCoordinates * pixelsToMeters;
 
     // This function returns the length of one degree of latitude and same for longitude for the given latitude
-    var lengths = cordovaExample.calculateLongLatDegreesInMeters(center[1]);
+    var metersPerLatLonDegree = cordovaExample.calculateMetersPerLatLonDegree(center[1]);
 
     // Amounts of how much the coordinates need to be moved from the centre
-    var longitudes = metersHorizontal / lengths.degreeOfLongitudeInMeters;
-    var latitudes = metersVertical / lengths.degreeOfLatitudeInMeters;
+    var longitudes = metersHorizontal / metersPerLatLonDegree.metersPerLongitudeDegree;
+    var latitudes = metersVertical / metersPerLatLonDegree.metersPerLatitudeDegree;
 
     // Calculate the new south-west and north-east coordinates
     var swCoords = new google.maps.LatLng({lat : center[1] - latitudes, lng : center[0] - longitudes});
@@ -275,23 +248,12 @@ var cordovaExample = {
   },
 
   // Calculates length of degree of latitude and longitude according to the given latitude. Returns both of these lengths.
-  calculateLongLatDegreesInMeters: function(latitude) {
-    var lat = Math.PI * latitude / 180;
+  calculateMetersPerLatLonDegree: function(latitude) {
+    var EARTH_RADIUS_METERS = 6.371e6;
+    var METERS_PER_LAT_DEGREE = EARTH_RADIUS_METERS * Math.PI / 180.0;
+    var METERS_PER_LONG_DEGREE = METERS_PER_LAT_DEGREE * Math.cos(latitude / 180.0 * Math.PI);
 
-    // Constants for calculating lengths
-    var m1 = 111132.92;
-    var m2 = -559.82;
-    var m3 = 1.175;
-    var m4 = -0.0023;
-    var p1 = 111412.84;
-    var p2 = -93.5;
-    var p3 = 0.118;
-
-    // Calculate the length of a degree of latitude and longitude in meters
-    var lengthOfDegreeOfLatitudeInMeters = m1 + (m2 * Math.cos(2 * lat)) + (m3 * Math.cos(4 * lat)) + (m4 * Math.cos(6 * lat));
-    var lengthOfDegreeOfLongitudeInMeters = (p1 * Math.cos(lat)) + (p2 * Math.cos(3 * lat)) +	(p3 * Math.cos(5 * lat));
-
-    var lengths = {degreeOfLatitudeInMeters: lengthOfDegreeOfLatitudeInMeters, degreeOfLongitudeInMeters: lengthOfDegreeOfLongitudeInMeters};
-    return lengths
+    var metersPerLatLonDegree = {metersPerLatitudeDegree: METERS_PER_LAT_DEGREE, metersPerLongitudeDegree: METERS_PER_LONG_DEGREE};
+    return metersPerLatLonDegree;
   }
 };
