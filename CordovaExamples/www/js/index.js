@@ -58,12 +58,14 @@ var app = {
 
 app.initialize();
 var image;
+var accuracyImg;
 var venuemap;
 var groundOverlay = null;
 var cordovaExample = {
   watchId : null,
   regionWatchId : null,
   marker : null,
+  accuracyCircle : null,
   retina : window.devicePixelRatio > 1 ? true : false,
 
   // Configures IndoorAtlas SDK with API Key and Secret
@@ -87,10 +89,47 @@ var cordovaExample = {
     SpinnerPlugin.activityStop();
     try {
       var center = {lat : position.coords.latitude, lng : position.coords.longitude};
+      if (this.accuracyCircle != null) {
+        accuracyCircle.setMap(null);
+        accuracyCircle = null;
+
+        accuracyImg = {
+          path : google.maps.SymbolPath.CIRCLE,
+          fillColor : '#1681FB',
+          fillOpacity : 0.4,
+          scale : position.coords.accuracy,
+          strokeColor : '#1681FB',
+          strokeWeight : 1
+        };
+        this.accuracyCircle = new google.maps.Marker({
+          position : center,
+          map : venuemap,
+          icon : accuracyImg,
+          zIndex : google.maps.Marker.MAX_ZINDEX + 1,
+          optimized : false
+        });
+        this.accuracyCircle.setPosition(center);
+      } else {
+        accuracyImg = {
+          path : google.maps.SymbolPath.CIRCLE,
+          fillColor : '#1681FB',
+          fillOpacity : 0.4,
+          scale : position.coords.accuracy,
+          strokeColor : '#1681FB',
+          strokeWeight : 1
+        };
+        this.accuracyCircle = new google.maps.Marker({
+          position : center,
+          map : venuemap,
+          icon : accuracyImg,
+          zIndex : google.maps.Marker.MAX_ZINDEX + 1,
+          optimized : false
+        });
+      }
+
       if (this.marker != null) {
         this.marker.setPosition(center);
-      }
-      else {
+      } else {
         this.marker = new google.maps.Marker({
           position : center,
           map : venuemap,
@@ -115,6 +154,21 @@ var cordovaExample = {
     cordovaExample.startRegionWatch();
   },
 
+  getTraceID: function() {
+    // onSuccess Callback
+    function onSuccess(data) {
+      console.log('TraceId is: '+ data.traceId);
+    };
+
+    // onError Callback receives an error object
+    function onError(error) {
+      alert('Code: '    + error.code    + '\n' +
+            'Message: ' + error.message + '\n');
+    };
+
+IndoorAtlas.getTraceId(onSuccess, onError);
+  },
+
   // Fetches the current location
   getLocationCall: function() {
     SpinnerPlugin.activityStart('Fetching location. Move around');
@@ -125,8 +179,18 @@ var cordovaExample = {
   stopPositioning: function() {
     IndoorAtlas.clearWatch(this.watchId);
     cordovaExample.stopRegionWatch();
-    alert("IndoorAtlas positioning stopped");
+    if (groundOverlay != null) {
+      groundOverlay.setMap(null);}
+    if (marker != null) {
+      marker.setMap(null);
+      marker = null;
+    }
+    if (accuracyCircle != null) {
+      accuracyCircle.setMap(null);
+      accuracyCircle = null;
+    }
   },
+
   // Starts watching changes in region id
   startRegionWatch: function() {
     if (this.regionWatchId != null) {
@@ -150,41 +214,18 @@ var cordovaExample = {
       path : google.maps.SymbolPath.CIRCLE,
       fillColor : '#1681FB',
       fillOpacity : 1.0,
-      scale : 6.0,
+      scale : 5.0,
       strokeColor : '#1681FB',
       strokeWeight : 1
     };
     var mapProp = {
       center : new google.maps.LatLng(65.060848804763, 25.4410770535469),
-      zoom : 15,
+      zoom : 19,
       mapTypeId : google.maps.MapTypeId.ROADMAP,
       mapTypeControl : false,
       streetViewControl : false
     };
     venuemap = new google.maps.Map(document.getElementById('googleMap'), mapProp);
-  },
-
-  // Sets an overlay to Google Maps specified by the floorplan coordinates and bearing
-  mapOverlay: function(position) {
-    try {
-      SpinnerPlugin.activityStart('Setting overlay');
-      var win = function(floorplan) {
-        SpinnerPlugin.activityStop();
-        // Set position and map overlay
-        cordovaExample.setMapOverlay(floorplan);
-
-      };
-      var fail = function(error) {
-        SpinnerPlugin.activityStop();
-        alert(error.message);
-      };
-
-      // Gets the floorplan with the given region ID (floorplan ID) and then continues as specified earlier
-      IndoorAtlas.fetchFloorPlanWithId(position.regionId, win, fail);
-    }
-    catch(error) {
-      alert(error);
-    }
   },
 
   // Sets the map overlay
@@ -240,7 +281,6 @@ var cordovaExample = {
     };
     var fail = function(error) {
       SpinnerPlugin.activityStop();
-      alert(error.message);
     };
 
     // Gets the floorplan with the given region ID (floorplan ID) and then continues as specified earlier
