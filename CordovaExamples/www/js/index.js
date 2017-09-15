@@ -58,9 +58,9 @@ var app = {
 
 app.initialize();
 var image;
-var accuracyImg;
 var venuemap;
 var groundOverlay = null;
+var blueDotVisible = false;
 var cordovaExample = {
   watchId : null,
   regionWatchId : null,
@@ -90,35 +90,17 @@ var cordovaExample = {
     try {
       var center = {lat : position.coords.latitude, lng : position.coords.longitude};
 
-      if (this.marker != null) {
-        this.marker.setPosition(center);
-      } else {
-        this.marker = new google.maps.Marker({
-          position : center,
-          map : venuemap,
-          icon : image,
-          zIndex : google.maps.Marker.MAX_ZINDEX + 1,
-          optimized : false
-        });
+      marker.setPosition(center);
+
+      accuracyCircle.setRadius(position.coords.accuracy);
+      accuracyCircle.setCenter(center);
+
+      if (!blueDotVisible) {
+        accuracyCircle.setMap(venuemap);
+        marker.setMap(venuemap);
+        blueDotVisible = true;
       }
 
-      if (accuracyCircle != null) {
-        accuracyCircle.setRadius(position.coords.accuracy);
-        accuracyCircle.setCenter(center);
-      } else {
-        accuracyCircle = new google.maps.Circle({
-          strokeColor: '#1681FB',
-          strokeOpacity: 0.4,
-          strokeWeight: 1,
-          fillColor: '#1681FB',
-          fillOpacity: 0.4,
-          map: venuemap,
-          center: new google.maps.LatLng(65.060848804763, 25.4410770535469),
-          radius: position.coords.accuracy
-        });
-      }
-
-      accuracyCircle.setMap(venuemap);
       venuemap.panTo(center);
     }
     catch(error) {alert(error)};
@@ -170,6 +152,8 @@ IndoorAtlas.getTraceId(onSuccess, onError);
       accuracyCircle.setMap(null);
       accuracyCircle = null;
     }
+
+    blueDotVisible = false;
   },
 
   // Starts watching changes in region id
@@ -218,6 +202,16 @@ IndoorAtlas.getTraceId(onSuccess, onError);
       center: new google.maps.LatLng(65.060848804763, 25.4410770535469),
       radius: 1
     });
+
+    marker = new google.maps.Marker({
+      position : new google.maps.LatLng(65.060848804763, 25.4410770535469),
+      map : venuemap,
+      icon : image,
+      zIndex : google.maps.Marker.MAX_ZINDEX + 1,
+      optimized : false
+    });
+
+    marker.setMap(null);
     accuracyCircle.setMap(null);
   },
 
