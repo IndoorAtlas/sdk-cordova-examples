@@ -58,12 +58,14 @@ var app = {
 
 app.initialize();
 var image;
+var accuracyImg;
 var venuemap;
 var groundOverlay = null;
 var cordovaExample = {
   watchId : null,
   regionWatchId : null,
   marker : null,
+  accuracyCircle : null,
   retina : window.devicePixelRatio > 1 ? true : false,
 
   // Configures IndoorAtlas SDK with API Key and Secret
@@ -87,10 +89,47 @@ var cordovaExample = {
     SpinnerPlugin.activityStop();
     try {
       var center = {lat : position.coords.latitude, lng : position.coords.longitude};
+      if (this.accuracyCircle != null) {
+        accuracyCircle.setMap(null);
+        accuracyCircle = null;
+
+        accuracyImg = {
+          path : google.maps.SymbolPath.CIRCLE,
+          fillColor : '#1681FB',
+          fillOpacity : 0.4,
+          scale : position.coords.accuracy,
+          strokeColor : '#1681FB',
+          strokeWeight : 1
+        };
+        this.accuracyCircle = new google.maps.Marker({
+          position : center,
+          map : venuemap,
+          icon : accuracyImg,
+          zIndex : google.maps.Marker.MAX_ZINDEX + 1,
+          optimized : false
+        });
+        this.accuracyCircle.setPosition(center);
+      } else {
+        accuracyImg = {
+          path : google.maps.SymbolPath.CIRCLE,
+          fillColor : '#1681FB',
+          fillOpacity : 0.4,
+          scale : position.coords.accuracy,
+          strokeColor : '#1681FB',
+          strokeWeight : 1
+        };
+        this.accuracyCircle = new google.maps.Marker({
+          position : center,
+          map : venuemap,
+          icon : accuracyImg,
+          zIndex : google.maps.Marker.MAX_ZINDEX + 1,
+          optimized : false
+        });
+      }
+
       if (this.marker != null) {
         this.marker.setPosition(center);
-      }
-      else {
+      } else {
         this.marker = new google.maps.Marker({
           position : center,
           map : venuemap,
@@ -104,32 +143,6 @@ var cordovaExample = {
     catch(error) {alert(error)};
   },
 
-  // Sets position of the location
-  setPosition: function(options) {
-    // Check if the floorplan is set
-    if (IA_FLOORPLAN_ID != "") {
-
-      alert("Setting location with floor plan ID: " + IA_FLOORPLAN_ID);
-
-      try {
-        SpinnerPlugin.activityStart('Setting location');
-        var win = function() {
-          SpinnerPlugin.activityStop();
-          cordovaExample.startRegionWatch();
-        };
-        var fail = function(error) {
-          SpinnerPlugin.activityStop();
-          alert(error.message);
-        };
-        IndoorAtlas.setPosition(win, fail, options);
-      }
-      catch(error) {
-        alert(error);
-      }
-    } else {
-      alert("Floor plan ID is not set");
-    }
-  },
   // Starts positioning the user in the given floorplan area
   startPositioning: function() {
     SpinnerPlugin.activityStart('Move around to get a location');
@@ -139,6 +152,21 @@ var cordovaExample = {
     }
     this.watchId = IndoorAtlas.watchPosition(this.showLocation, this.IAServiceFailed);
     cordovaExample.startRegionWatch();
+  },
+
+  getTraceID: function() {
+    // onSuccess Callback
+    function onSuccess(data) {
+      console.log('TraceId is: '+ data.traceId);
+    };
+
+    // onError Callback receives an error object
+    function onError(error) {
+      alert('Code: '    + error.code    + '\n' +
+            'Message: ' + error.message + '\n');
+    };
+
+IndoorAtlas.getTraceId(onSuccess, onError);
   },
 
   // Fetches the current location
@@ -151,8 +179,18 @@ var cordovaExample = {
   stopPositioning: function() {
     IndoorAtlas.clearWatch(this.watchId);
     cordovaExample.stopRegionWatch();
-    alert("IndoorAtlas positioning stopped");
+    if (groundOverlay != null) {
+      groundOverlay.setMap(null);}
+    if (marker != null) {
+      marker.setMap(null);
+      marker = null;
+    }
+    if (accuracyCircle != null) {
+      accuracyCircle.setMap(null);
+      accuracyCircle = null;
+    }
   },
+
   // Starts watching changes in region id
   startRegionWatch: function() {
     if (this.regionWatchId != null) {
@@ -176,42 +214,18 @@ var cordovaExample = {
       path : google.maps.SymbolPath.CIRCLE,
       fillColor : '#1681FB',
       fillOpacity : 1.0,
-      scale : 6.0,
+      scale : 5.0,
       strokeColor : '#1681FB',
       strokeWeight : 1
     };
     var mapProp = {
       center : new google.maps.LatLng(65.060848804763, 25.4410770535469),
-      zoom : 15,
+      zoom : 19,
       mapTypeId : google.maps.MapTypeId.ROADMAP,
       mapTypeControl : false,
       streetViewControl : false
     };
     venuemap = new google.maps.Map(document.getElementById('googleMap'), mapProp);
-    cordovaExample.mapOverlay({regionId : IA_FLOORPLAN_ID});
-  },
-
-  // Sets an overlay to Google Maps specified by the floorplan coordinates and bearing
-  mapOverlay: function(position) {
-    try {
-      SpinnerPlugin.activityStart('Setting overlay');
-      var win = function(floorplan) {
-        SpinnerPlugin.activityStop();
-        // Set position and map overlay
-        cordovaExample.setMapOverlay(floorplan);
-
-      };
-      var fail = function(error) {
-        SpinnerPlugin.activityStop();
-        alert(error.message);
-      };
-
-      // Gets the floorplan with the given region ID (floorplan ID) and then continues as specified earlier
-      IndoorAtlas.fetchFloorPlanWithId(position.regionId, win, fail);
-    }
-    catch(error) {
-      alert(error);
-    }
   },
 
   // Sets the map overlay
@@ -227,11 +241,11 @@ var cordovaExample = {
     var metersVertical = heightForCoordinates * pixelsToMeters;
 
     // This function returns the length of one degree of latitude and same for longitude for the given latitude
-    var lengths = cordovaExample.calculateLongLatDegreesInMeters(center[1]);
+    var metersPerLatLonDegree = cordovaExample.calculateMetersPerLatLonDegree(center[1]);
 
     // Amounts of how much the coordinates need to be moved from the centre
-    var longitudes = metersHorizontal / lengths.degreeOfLongitudeInMeters;
-    var latitudes = metersVertical / lengths.degreeOfLatitudeInMeters;
+    var longitudes = metersHorizontal / metersPerLatLonDegree.metersPerLongitudeDegree;
+    var latitudes = metersVertical / metersPerLatLonDegree.metersPerLatitudeDegree;
 
     // Calculate the new south-west and north-east coordinates
     var swCoords = new google.maps.LatLng({lat : center[1] - latitudes, lng : center[0] - longitudes});
@@ -267,7 +281,6 @@ var cordovaExample = {
     };
     var fail = function(error) {
       SpinnerPlugin.activityStop();
-      alert(error.message);
     };
 
     // Gets the floorplan with the given region ID (floorplan ID) and then continues as specified earlier
@@ -275,23 +288,12 @@ var cordovaExample = {
   },
 
   // Calculates length of degree of latitude and longitude according to the given latitude. Returns both of these lengths.
-  calculateLongLatDegreesInMeters: function(latitude) {
-    var lat = Math.PI * latitude / 180;
+  calculateMetersPerLatLonDegree: function(latitude) {
+    var EARTH_RADIUS_METERS = 6.371e6;
+    var METERS_PER_LAT_DEGREE = EARTH_RADIUS_METERS * Math.PI / 180.0;
+    var METERS_PER_LONG_DEGREE = METERS_PER_LAT_DEGREE * Math.cos(latitude / 180.0 * Math.PI);
 
-    // Constants for calculating lengths
-    var m1 = 111132.92;
-    var m2 = -559.82;
-    var m3 = 1.175;
-    var m4 = -0.0023;
-    var p1 = 111412.84;
-    var p2 = -93.5;
-    var p3 = 0.118;
-
-    // Calculate the length of a degree of latitude and longitude in meters
-    var lengthOfDegreeOfLatitudeInMeters = m1 + (m2 * Math.cos(2 * lat)) + (m3 * Math.cos(4 * lat)) + (m4 * Math.cos(6 * lat));
-    var lengthOfDegreeOfLongitudeInMeters = (p1 * Math.cos(lat)) + (p2 * Math.cos(3 * lat)) +	(p3 * Math.cos(5 * lat));
-
-    var lengths = {degreeOfLatitudeInMeters: lengthOfDegreeOfLatitudeInMeters, degreeOfLongitudeInMeters: lengthOfDegreeOfLongitudeInMeters};
-    return lengths
+    var metersPerLatLonDegree = {metersPerLatitudeDegree: METERS_PER_LAT_DEGREE, metersPerLongitudeDegree: METERS_PER_LONG_DEGREE};
+    return metersPerLatLonDegree;
   }
 };
