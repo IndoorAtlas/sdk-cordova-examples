@@ -12,6 +12,3 @@ var GOOGLE_API_KEY = '';
 // Get IndoorAtlas API Key and Secret from here https://app.indooratlas.com/apps
 var IA_API_KEY = '';
 var IA_API_SECRET = '';
-
-// Floorplan ID https://developer.indooratlas.com/venues
-var IA_FLOORPLAN_ID = '';
