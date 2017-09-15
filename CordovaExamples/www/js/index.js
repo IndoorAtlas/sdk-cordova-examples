@@ -89,43 +89,6 @@ var cordovaExample = {
     SpinnerPlugin.activityStop();
     try {
       var center = {lat : position.coords.latitude, lng : position.coords.longitude};
-      if (this.accuracyCircle != null) {
-        accuracyCircle.setMap(null);
-        accuracyCircle = null;
-
-        accuracyImg = {
-          path : google.maps.SymbolPath.CIRCLE,
-          fillColor : '#1681FB',
-          fillOpacity : 0.4,
-          scale : position.coords.accuracy,
-          strokeColor : '#1681FB',
-          strokeWeight : 1
-        };
-        this.accuracyCircle = new google.maps.Marker({
-          position : center,
-          map : venuemap,
-          icon : accuracyImg,
-          zIndex : google.maps.Marker.MAX_ZINDEX + 1,
-          optimized : false
-        });
-        this.accuracyCircle.setPosition(center);
-      } else {
-        accuracyImg = {
-          path : google.maps.SymbolPath.CIRCLE,
-          fillColor : '#1681FB',
-          fillOpacity : 0.4,
-          scale : position.coords.accuracy,
-          strokeColor : '#1681FB',
-          strokeWeight : 1
-        };
-        this.accuracyCircle = new google.maps.Marker({
-          position : center,
-          map : venuemap,
-          icon : accuracyImg,
-          zIndex : google.maps.Marker.MAX_ZINDEX + 1,
-          optimized : false
-        });
-      }
 
       if (this.marker != null) {
         this.marker.setPosition(center);
@@ -138,6 +101,24 @@ var cordovaExample = {
           optimized : false
         });
       }
+
+      if (accuracyCircle != null) {
+        accuracyCircle.setRadius(position.coords.accuracy);
+        accuracyCircle.setCenter(center);
+      } else {
+        accuracyCircle = new google.maps.Circle({
+          strokeColor: '#1681FB',
+          strokeOpacity: 0.4,
+          strokeWeight: 1,
+          fillColor: '#1681FB',
+          fillOpacity: 0.4,
+          map: venuemap,
+          center: new google.maps.LatLng(65.060848804763, 25.4410770535469),
+          radius: position.coords.accuracy
+        });
+      }
+
+      accuracyCircle.setMap(venuemap);
       venuemap.panTo(center);
     }
     catch(error) {alert(error)};
@@ -220,12 +201,24 @@ IndoorAtlas.getTraceId(onSuccess, onError);
     };
     var mapProp = {
       center : new google.maps.LatLng(65.060848804763, 25.4410770535469),
-      zoom : 19,
+      zoom : 3,
       mapTypeId : google.maps.MapTypeId.ROADMAP,
       mapTypeControl : false,
       streetViewControl : false
     };
     venuemap = new google.maps.Map(document.getElementById('googleMap'), mapProp);
+
+    accuracyCircle = new google.maps.Circle({
+      strokeColor: '#1681FB',
+      strokeOpacity: 0.4,
+      strokeWeight: 1,
+      fillColor: '#1681FB',
+      fillOpacity: 0.4,
+      map: venuemap,
+      center: new google.maps.LatLng(65.060848804763, 25.4410770535469),
+      radius: 1
+    });
+    accuracyCircle.setMap(null);
   },
 
   // Sets the map overlay
