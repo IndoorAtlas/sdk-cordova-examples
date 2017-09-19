@@ -1739,7 +1739,7 @@ GroundOverlayEX_element_imageLLB.prototype.addToMapLayer_ = function() {
 	if (!this.childAppended_) {
 		// Add the node to the "overlayMouseTarget" pane of the map so we get mouse events
 		var panes = this.parentGOEX_.getPanes();
-		panes.overlayLayer.appendChild(this.node_);
+		panes.mapPane.appendChild(this.node_);
 		this.node_.style.visibility = 'visible';
 		this.childAppended_ = true;
 		//panes = null;
@@ -2017,7 +2017,7 @@ GroundOverlayEX_element_imageLLQ.prototype.addToMapLayer_ = function() {
 	if (!this.childAppended_) {
 		// Add the node to the "overlayMouseTarget" pane of the map so we get mouse events
 		var panes = this.parentGOEX_.getPanes();
-		panes.overlayMouseTarget.appendChild(this.node_);
+		panes.markerLayer.appendChild(this.node_);
 		this.node_.style.visibility = 'visible';
 		this.childAppended_ = true;
 		panes = null;
