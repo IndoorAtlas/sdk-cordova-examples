@@ -99,9 +99,9 @@ var cordovaExample = {
         accuracyCircle.setMap(venuemap);
         marker.setMap(venuemap);
         blueDotVisible = true;
+        venuemap.panTo(center);
+        venuemap.setZoom(20);
       }
-
-      venuemap.panTo(center);
     }
     catch(error) {alert(error)};
   },
@@ -129,7 +129,7 @@ var cordovaExample = {
             'Message: ' + error.message + '\n');
     };
 
-IndoorAtlas.getTraceId(onSuccess, onError);
+    IndoorAtlas.getTraceId(onSuccess, onError);
   },
 
   // Fetches the current location
@@ -146,13 +146,10 @@ IndoorAtlas.getTraceId(onSuccess, onError);
       groundOverlay.setMap(null);}
     if (marker != null) {
       marker.setMap(null);
-      marker = null;
     }
     if (accuracyCircle != null) {
       accuracyCircle.setMap(null);
-      accuracyCircle = null;
     }
-
     blueDotVisible = false;
   },
 
@@ -257,7 +254,6 @@ IndoorAtlas.getTraceId(onSuccess, onError);
     groundOverlay = new GroundOverlayEX(floorplan.url, bounds, options);
     // Displays the overlay in the map
     groundOverlay.setMap(venuemap);
-    venuemap.setZoom(20);
   },
 
   // Updates the ground overlay
