@@ -96,12 +96,12 @@ var cordovaExample = {
       accuracyCircle.setCenter(center);
 
       if (!blueDotVisible) {
-        accuracyCircle.setMap(venuemap);
-        marker.setMap(venuemap);
+        accuracyCircle.setVisible(true);
+        marker.setVisible(true);
         blueDotVisible = true;
+        venuemap.panTo(center);
+        venuemap.setZoom(20);
       }
-
-      venuemap.panTo(center);
     }
     catch(error) {alert(error)};
   },
@@ -129,7 +129,7 @@ var cordovaExample = {
             'Message: ' + error.message + '\n');
     };
 
-IndoorAtlas.getTraceId(onSuccess, onError);
+    IndoorAtlas.getTraceId(onSuccess, onError);
   },
 
   // Fetches the current location
@@ -143,16 +143,14 @@ IndoorAtlas.getTraceId(onSuccess, onError);
     IndoorAtlas.clearWatch(this.watchId);
     cordovaExample.stopRegionWatch();
     if (groundOverlay != null) {
-      groundOverlay.setMap(null);}
+      groundOverlay.setMap(null);
+    }
     if (marker != null) {
-      marker.setMap(null);
-      marker = null;
+      marker.setVisible(false);
     }
     if (accuracyCircle != null) {
-      accuracyCircle.setMap(null);
-      accuracyCircle = null;
+      accuracyCircle.setVisible(false);
     }
-
     blueDotVisible = false;
   },
 
@@ -211,8 +209,10 @@ IndoorAtlas.getTraceId(onSuccess, onError);
       optimized : false
     });
 
-    marker.setMap(null);
-    accuracyCircle.setMap(null);
+    marker.setVisible(false);
+    marker.setMap(venuemap);
+    accuracyCircle.setVisible(false);
+    accuracyCircle.setMap(venuemap);
   },
 
   // Sets the map overlay
@@ -244,7 +244,7 @@ IndoorAtlas.getTraceId(onSuccess, onError);
     // Options for custom class GroundOverlayEX
     var options = {
       // Rotates image counter-clockwise and floorplan.bearing has rotation clockwise therefore 360-[degrees] is needed
-      rotate: 360 - floorplan.bearing
+      rotate : 360 - floorplan.bearing
     };
 
     // Remove previous overlay if it exists
@@ -257,7 +257,6 @@ IndoorAtlas.getTraceId(onSuccess, onError);
     groundOverlay = new GroundOverlayEX(floorplan.url, bounds, options);
     // Displays the overlay in the map
     groundOverlay.setMap(venuemap);
-    venuemap.setZoom(20);
   },
 
   // Updates the ground overlay
