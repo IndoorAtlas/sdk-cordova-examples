@@ -160,7 +160,9 @@ var cordovaExample = {
       IndoorAtlas.clearRegionWatch(this.regionWatchId);
     }
     var onEnterRegion = function(region) {
-      cordovaExample.updateOverlay(region.regionId);
+      if (region.regionType == Region.TYPE_FLOORPLAN) {
+        cordovaExample.updateOverlay(region.regionId);
+      }
     };
     var onExitRegion = function(region) {
     };
