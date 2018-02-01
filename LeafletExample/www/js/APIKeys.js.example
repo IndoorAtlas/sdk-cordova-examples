@@ -1,0 +1,12 @@
+/*
+ * IndoorAtlas Cordova Plugin Examples
+ * https://github.com/IndoorAtlas/cordova-plugin
+ * https://github.com/IndoorAtlas/sdk-cordova-examples
+ */
+
+// API KEYS FOR INDOORATLAS SERVICES AND MAPBOX JAVASCRIPT API
+var MAPBOX_ACCESS_TOKEN = "pk.YOUR TOKEN";
+
+// Get IndoorAtlas API Key and Secret from here https://app.indooratlas.com/apps
+var IA_API_KEY = '';
+var IA_API_SECRET = '';
