@@ -73,11 +73,19 @@ function CordovaExample() {
   // Set the API Keys in www/js/APIKeys.js
   this.configureIA = function() {
     var _config = {key : IA_API_KEY, secret : IA_API_SECRET};
+    IndoorAtlas.onStatusChanged(onStatusChanged, alert);
     IndoorAtlas.initialize(IAServiceConfigured, IAServiceFailed, _config);
     return false;
   };
 
   // ---- private
+
+  function onStatusChanged(status) {
+    console.log("status changed: "+status.message);
+    if (status.code === CurrentStatus.STATUS_OUT_OF_SERVICE) {
+      alert("Unrecoverable error: "+status.message);
+    }
+  }
 
   function IAServiceFailed (result) {
     // Try again to initialize the service
@@ -86,8 +94,7 @@ function CordovaExample() {
   }
 
   function IAServiceConfigured(result) {
-    // can't start syncronously on IAServiceConfigured
-    setTimeout(startPositioning, 0);
+    startPositioning();
   }
 
   // Starts IA positioning
