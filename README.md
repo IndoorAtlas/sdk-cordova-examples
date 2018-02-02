@@ -11,6 +11,7 @@ Getting started requires you to set up a free developer account and fingerprint 
 * [Getting Started](#getting-started)
     * [Set up your account](#set-up-your-account)
     * [Get started with Cordova Examples](#get-started-with-cordova-examples)
+* [Wayfinding](#wayfinding)
 * [Documentation](#documentation)
 * [License](#license)
 
@@ -53,6 +54,15 @@ Build the project and run it
 cordova build
 cordova run
 ```
+
+## Wayfinding
+
+Before using wayfinding part of the example, you need to create and download a graph from [IndoorAtlas web tool](). After you have added the graph to the example you can build and try it.
+
+You can select a destination by long-pressing the screen. The route is updated to start from the current location of you whenever a new location is obtained from the IndoorAtlas platform.
+
+The part of the possibly multi-floor route that is on the current floor is
+shown in blue and the rest of the route on the other floors is gray.
 
 ## Documentation
 

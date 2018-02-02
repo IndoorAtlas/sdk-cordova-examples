@@ -23,7 +23,7 @@ function readJsonAsset(assetName, callback) {
 function WayfindingController(graph, googleMap) {
   var that = this;
 
-  IndoorAtlas.initWithGraph(graph).then(function(wayfinder) {
+  IndoorAtlas.buildWayfinder(graph).then(function(wayfinder) {
 
     var wayfindingRoutePolylines = [];
 
