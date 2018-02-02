@@ -98,7 +98,7 @@ function WayfindingController(wayfinder, googleMap) {
   };
 
   this.updateLocation = function (location) {
-    wayfinder.setLocation(60.16983476667832, 24.934158295291354, location.floor);
+    wayfinder.setLocation(location.latitude, location.longitude, location.floor);
     updatePolylines();
   };
 
