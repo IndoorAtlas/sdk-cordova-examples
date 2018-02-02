@@ -20,91 +20,92 @@ function readJsonAsset(assetName, callback) {
   }, onError);
 }
 
-function WayfindingController(graph, googleMap) {
-  var that = this;
+function buildWayfindingController(graph, googleMap) {
+  return IndoorAtlas.buildWayfinder(graph).then(function(wayfinder) {
+    return new WayfindingController(wayfinder, googleMap);
+  });
+}
 
-  IndoorAtlas.buildWayfinder(graph).then(function(wayfinder) {
+function WayfindingController(wayfinder, googleMap) {
+  var wayfindingRoutePolylines = [];
 
-    var wayfindingRoutePolylines = [];
+  function updatePolylines() {
+    var success = function(result) {
+      var route = result.route;
 
-    function updatePolylines() {
-      var success = function(result) {
-        var route = result.route;
+      // Clear previous polylines from the map
+      wayfindingRoutePolylines.map(function(pl) { pl.setMap(null); });
+      wayfindingRoutePolylines = [];
 
-        // Clear previous polylines from the map
-        wayfindingRoutePolylines.map(function(pl) { pl.setMap(null); });
-        wayfindingRoutePolylines = [];
+      if (route === null || route.length === 0) {
+        // Null just clears the route
+        return;
+      }
 
-        if (route === null || route.length === 0) {
-          // Null just clears the route
-          return;
-        }
+      var currentFloor = route[0].begin.floor;
+      // For visualization, split returned multi-floor route to two parts:
+      // the part on the current floor and rest of the route on other floors
+      var currentFloorRoute = [route[0].begin];
 
-        var currentFloor = route[0].begin.floor;
-        // For visualization, split returned multi-floor route to two parts:
-        // the part on the current floor and rest of the route on other floors
-        var currentFloorRoute = [route[0].begin];
+      var legIndex = 0;
+      // Weird bug on iOS: changing == to === here does not work
+      while (legIndex < route.length && route[legIndex].end.floor == currentFloor) {
+        currentFloorRoute.push(route[legIndex].end);
+        legIndex++;
+      }
 
-        var legIndex = 0;
-        // Weird bug on iOS: changing == to === here does not work
-        while (legIndex < route.length && route[legIndex].end.floor == currentFloor) {
-          currentFloorRoute.push(route[legIndex].end);
-          legIndex++;
-        }
+      var restOfRoute = [route[legIndex-1].end];
 
-        var restOfRoute = [route[legIndex-1].end];
+      while (legIndex < route.length) {
+        restOfRoute.push(route[legIndex].end);
+        legIndex++;
+      }
 
-        while (legIndex < route.length) {
-          restOfRoute.push(route[legIndex].end);
-          legIndex++;
-        }
+      // Draw polylines on the map
+      function addPolyline(spec) {
+        // Convert leg nodes to google maps latlng points
+        spec.path = spec.path.map(function (legNode) {
+          return {
+            lat: legNode.latitude,
+            lng: legNode.longitude
+          };
+        });
+        var pl = new google.maps.Polyline(spec);
+        wayfindingRoutePolylines.push(pl);
+        pl.setMap(googleMap);
+      }
 
-        // Draw polylines on the map
-        function addPolyline(spec) {
-          // Convert leg nodes to google maps latlng points
-          spec.path = spec.path.map(function (legNode) {
-            return {
-              lat: legNode.latitude,
-              lng: legNode.longitude
-            };
-          });
-          var pl = new google.maps.Polyline(spec);
-          wayfindingRoutePolylines.push(pl);
-          pl.setMap(googleMap);
-        }
+      addPolyline({
+        path: currentFloorRoute,
+        strokeColor: '#0000FF',
+        strokeOpacity: 0.6,
+        strokeWeight: 4
+      });
 
+      // The "other floors" part may be empty
+      if (restOfRoute.length > 1) {
         addPolyline({
-          path: currentFloorRoute,
-          strokeColor: '#0000FF',
-          strokeOpacity: 0.6,
+          path: restOfRoute,
+          strokeColor: '#808080',
+          strokeOpacity: 0.2,
           strokeWeight: 4
         });
-
-        // The "other floors" part may be empty
-        if (restOfRoute.length > 1) {
-          addPolyline({
-            path: restOfRoute,
-            strokeColor: '#808080',
-            strokeOpacity: 0.2,
-            strokeWeight: 4
-          });
-        }
-      };
-
-      wayfinder.getRoute()
-      .then(success).catch(function(e) { alert(e) });
-    }
-
-    that.updateLocation = function (location) {
-      wayfinder.setLocation(location.latitude, location.longitude, location.floor);
-      updatePolylines();
+      }
     };
 
-    that.setDestination = function (lat, lon, floor) {
-      wayfinder.setDestination(lat, lon, floor);
-      updatePolylines();
-    };
-  }).catch(function(e) { alert(e) });
+    wayfinder.getRoute()
+    .then(success).catch(function(e) { alert(e) });
+  };
+
+  this.updateLocation = function (location) {
+    wayfinder.setLocation(60.16983476667832, 24.934158295291354, location.floor);
+    updatePolylines();
+  };
+
+  this.setDestination = function (lat, lon, floor) {
+    wayfinder.setDestination(lat, lon, floor);
+    updatePolylines();
+  };
 }
 
 function onLongPress(map, callback) {

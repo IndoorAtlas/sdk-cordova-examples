@@ -252,16 +252,20 @@ var cordovaExample = {
     accuracyCircle.setMap(venuemap);
 
     readJsonAsset('www/data/wayfinding-graph.json', function (graph) {
-        wayfindingController = new WayfindingController(graph, venuemap);
+        buildWayfindingController(graph, venuemap).then(function(wfc) {
+          wayfindingController = wfc;
+        });
     });
 
     onLongPress(venuemap, function (event) {
       // on long-press, route to pressed location (on the same floor as
       // the user is on now)
-      wayfindingController.setDestination(
-        event.latLng.lat(),
-        event.latLng.lng(),
-        lastFloor);
+      if (wayfindingController) {
+        wayfindingController.setDestination(
+          event.latLng.lat(),
+          event.latLng.lng(),
+          lastFloor);
+      };
     });
   },
 
