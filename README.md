@@ -46,6 +46,7 @@ cordova platform add android
 Add IndoorAtlas Cordova plugin and all other plugins needed in these examples
 ```
 cordova plugin add cordova-plugin-spinner
+cordova plugin add cordova-plugin-file
 cordova plugin add https://github.com/IndoorAtlas/cordova-plugin.git
 ```
 
@@ -57,7 +58,9 @@ cordova run
 
 ## Wayfinding
 
-Before using wayfinding part of the example, you need to create and download a graph from [IndoorAtlas web tool](). After you have added the graph to the example you can build and try it.
+Before using wayfinding part of the example, you need to [create and download a graph](https://docs.indooratlas.com/manage/wayfinding/) from https://app.indooratlas.com. After you have added the graph to the example you can build and try it.
+
+Replace wayfinding graph in `www/data/wayfinding-graph.json` with the previously downloaded graph.
 
 You can select a destination by long-pressing the screen. The route is updated to start from the current location of you whenever a new location is obtained from the IndoorAtlas platform.
 
