@@ -59,19 +59,21 @@ var app = {
 app.initialize();
 var image;
 var venuemap;
+var wayfindingController;
+var lastFloor = 0;
 var groundOverlay = null;
 var blueDotVisible = false;
 var cordovaExample = {
-  watchId : null,
-  regionWatchId : null,
-  marker : null,
-  accuracyCircle : null,
-  retina : window.devicePixelRatio > 1 ? true : false,
+  watchId: null,
+  regionWatchId: null,
+  marker: null,
+  accuracyCircle: null,
+  retina: window.devicePixelRatio > 1,
 
   // Configures IndoorAtlas SDK with API Key and Secret
   // Set the API Keys in www/js/APIKeys.js
   configureIA: function() {
-    var _config = {key : IA_API_KEY, secret : IA_API_SECRET};
+    var _config = { key: IA_API_KEY, secret: IA_API_SECRET };
     IndoorAtlas.initialize(this.IAServiceConfigured, this.IAServiceFailed, _config);
     return false;
   },
@@ -88,7 +90,11 @@ var cordovaExample = {
     // Show a map centered at (position.coords.latitude, position.coords.longitude).
     SpinnerPlugin.activityStop();
     try {
-      var center = {lat : position.coords.latitude, lng : position.coords.longitude};
+      var center = { lat: position.coords.latitude, lng: position.coords.longitude };
+      lastFloor = position.coords.floor;
+      if (wayfindingController) {
+        wayfindingController.updateLocation(position.coords);
+      }
 
       marker.setPosition(center);
 
@@ -108,7 +114,8 @@ var cordovaExample = {
 
   // Starts positioning the user in the given floorplan area
   startPositioning: function() {
-    SpinnerPlugin.activityStart('Move around to get a location');
+
+    SpinnerPlugin.activityStart('Waiting for location');
 
     if (this.watchId != null) {
       IndoorAtlas.clearWatch(this.watchId);
@@ -176,19 +183,47 @@ var cordovaExample = {
   // Initializes Google Maps with the given properties
   initializeMap: function() {
     image = {
-      path : google.maps.SymbolPath.CIRCLE,
-      fillColor : '#1681FB',
-      fillOpacity : 1.0,
-      scale : 5.0,
-      strokeColor : '#1681FB',
-      strokeWeight : 1
+      path: google.maps.SymbolPath.CIRCLE,
+      fillColor: '#1681FB',
+      fillOpacity: 1.0,
+      scale: 5.0,
+      strokeColor: '#1681FB',
+      strokeWeight: 1
     };
     var mapProp = {
-      center : new google.maps.LatLng(65.060848804763, 25.4410770535469),
-      zoom : 3,
-      mapTypeId : google.maps.MapTypeId.ROADMAP,
-      mapTypeControl : false,
-      streetViewControl : false
+      center: new google.maps.LatLng(65.060848804763, 25.4410770535469),
+      zoom: 3,
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      mapTypeControl: false,
+      streetViewControl: false,
+
+      // Disable clickable Points of Interest in Google Maps
+      styles: [
+        {
+          "elementType": "labels",
+          "stylers": [
+            {
+              "visibility": "off"
+            }
+          ]
+        },
+        {
+          "featureType": "administrative.land_parcel",
+          "stylers": [
+            {
+              "visibility": "off"
+            }
+          ]
+        },
+        {
+          "featureType": "administrative.neighborhood",
+          "stylers": [
+            {
+              "visibility": "off"
+            }
+          ]
+        }
+      ]
     };
     venuemap = new google.maps.Map(document.getElementById('googleMap'), mapProp);
 
@@ -204,17 +239,39 @@ var cordovaExample = {
     });
 
     marker = new google.maps.Marker({
-      position : new google.maps.LatLng(65.060848804763, 25.4410770535469),
-      map : venuemap,
-      icon : image,
-      zIndex : google.maps.Marker.MAX_ZINDEX + 1,
-      optimized : false
+      position: new google.maps.LatLng(65.060848804763, 25.4410770535469),
+      map: venuemap,
+      icon: image,
+      zIndex: google.maps.Marker.MAX_ZINDEX + 1,
+      optimized: false
     });
 
     marker.setVisible(false);
     marker.setMap(venuemap);
     accuracyCircle.setVisible(false);
     accuracyCircle.setMap(venuemap);
+
+    readJsonAsset('www/data/wayfinding-graph.json', function (graph) {
+      if (graph) {
+        console.log("initializing wayfinding");
+        buildWayfindingController(graph, venuemap).then(function(wfc) {
+          wayfindingController = wfc;
+        });
+      } else {
+        console.log("no wayfinding graph");
+      }
+    });
+
+    onLongPress(venuemap, function (event) {
+      // on long-press, route to pressed location (on the same floor as
+      // the user is on now)
+      if (wayfindingController) {
+        wayfindingController.setDestination(
+          event.latLng.lat(),
+          event.latLng.lng(),
+          lastFloor);
+      };
+    });
   },
 
   // Sets the map overlay
@@ -237,8 +294,8 @@ var cordovaExample = {
     var latitudes = metersVertical / metersPerLatLonDegree.metersPerLatitudeDegree;
 
     // Calculate the new south-west and north-east coordinates
-    var swCoords = new google.maps.LatLng({lat : center[1] - latitudes, lng : center[0] - longitudes});
-    var neCoords = new google.maps.LatLng({lat : center[1] + latitudes, lng : center[0] + longitudes});
+    var swCoords = new google.maps.LatLng({ lat: center[1] - latitudes, lng: center[0] - longitudes });
+    var neCoords = new google.maps.LatLng({ lat: center[1] + latitudes, lng: center[0] + longitudes });
 
     // Get the bound of the unrotated image
     var bounds = new google.maps.LatLngBounds(swCoords , neCoords);
@@ -246,7 +303,7 @@ var cordovaExample = {
     // Options for custom class GroundOverlayEX
     var options = {
       // Rotates image counter-clockwise and floorplan.bearing has rotation clockwise therefore 360-[degrees] is needed
-      rotate : 360 - floorplan.bearing
+      rotate: 360 - floorplan.bearing
     };
 
     // Remove previous overlay if it exists
@@ -281,7 +338,7 @@ var cordovaExample = {
     var METERS_PER_LAT_DEGREE = EARTH_RADIUS_METERS * Math.PI / 180.0;
     var METERS_PER_LONG_DEGREE = METERS_PER_LAT_DEGREE * Math.cos(latitude / 180.0 * Math.PI);
 
-    var metersPerLatLonDegree = {metersPerLatitudeDegree: METERS_PER_LAT_DEGREE, metersPerLongitudeDegree: METERS_PER_LONG_DEGREE};
+    var metersPerLatLonDegree = { metersPerLatitudeDegree: METERS_PER_LAT_DEGREE, metersPerLongitudeDegree: METERS_PER_LONG_DEGREE };
     return metersPerLatLonDegree;
   }
 };
