@@ -252,9 +252,14 @@ var cordovaExample = {
     accuracyCircle.setMap(venuemap);
 
     readJsonAsset('www/data/wayfinding-graph.json', function (graph) {
+      if (graph) {
+        console.log("initializing wayfinding");
         buildWayfindingController(graph, venuemap).then(function(wfc) {
           wayfindingController = wfc;
         });
+      } else {
+        console.log("no wayfinding graph");
+      }
     });
 
     onLongPress(venuemap, function (event) {
