@@ -160,14 +160,16 @@ function CordovaExample() {
 
   	map = L.map('map').fitWorld();
 
-  	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}{r}.png?access_token=' + MAPBOX_ACCESS_TOKEN, {
-  		maxZoom: 23,
-  		attribution: 'Map data &copy; OpenStreetMap contributors, ' +
-  			'CC-BY-SA, ' +
-  			'Imagery © Mapbox',
-  		id: 'mapbox.light',
-      detectRetina: true
-  	}).addTo(map);
+    if (MAPBOX_ACCESS_TOKEN) {
+    	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}{r}.png?access_token=' + MAPBOX_ACCESS_TOKEN, {
+    		maxZoom: 23,
+    		attribution: 'Map data &copy; OpenStreetMap contributors, ' +
+    			'CC-BY-SA, ' +
+    			'Imagery © Mapbox',
+    		id: 'mapbox.light',
+        detectRetina: true
+    	}).addTo(map);
+    }
 
     floorPlanManager = new FloorPlanManager(map);
   }
