@@ -31,6 +31,10 @@ var exampleApp = {
     this.floorPlanId = null;
   },
 
+  onPositioningStopped: function() {
+    console.log("positioning stopped");
+  },
+
   onLocationChanged: function(loc) {
     var FLOOR_CERTAINTY_THRESHOLD = 0.7;
     if (this.floorPlanId && loc.floorCertainty > FLOOR_CERTAINTY_THRESHOLD) {
@@ -120,7 +124,23 @@ var cordovaAndIaController = {
     this.regionWatchId = IndoorAtlas.watchRegion(
       exampleApp.onEnterRegion.bind(exampleApp),
       exampleApp.onExitRegion.bind(exampleApp), onError);
+  },
+
+  stopPositioning: function() {
+    if (this.watchId != null) {
+      IndoorAtlas.clearWatch(this.watchId);
+    }
+    if (this.regionWatchId != null) {
+      IndoorAtlas.clearRegionWatch(this.regionWatchId);
+    }
+
+    exampleApp.onPositioningStopped();
   }
 };
 
 cordovaAndIaController.initialize();
+
+// timer: stop positioning after 60 seconds
+setTimeout(
+  cordovaAndIaController.stopPositioning.bind(cordovaAndIaController),
+  60*1000);

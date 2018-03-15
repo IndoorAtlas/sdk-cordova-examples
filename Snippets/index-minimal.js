@@ -29,6 +29,10 @@ var exampleApp = {
     console.log("positioning started");
   },
 
+  onPositioningStopped: function() {
+    console.log("positioning stopped");
+  },
+
   onLocationChanged: function(loc) {
     console.log(loc);
   },
@@ -92,7 +96,6 @@ var cordovaAndIaController = {
 
   startPositioning: function() {
     console.log("starting positioning");
-    exampleApp.onPositioningStarted();
 
     var onError = this.IAServiceFailed.bind(this);
 
@@ -110,7 +113,25 @@ var cordovaAndIaController = {
     this.regionWatchId = IndoorAtlas.watchRegion(
       exampleApp.onEnterRegion.bind(exampleApp),
       exampleApp.onExitRegion.bind(exampleApp), onError);
+
+    exampleApp.onPositioningStarted();
+  },
+
+  stopPositioning: function() {
+    if (this.watchId != null) {
+      IndoorAtlas.clearWatch(this.watchId);
+    }
+    if (this.regionWatchId != null) {
+      IndoorAtlas.clearRegionWatch(this.regionWatchId);
+    }
+
+    exampleApp.onPositioningStopped();
   }
 };
 
 cordovaAndIaController.initialize();
+
+// timer: stop positioning after 20 seconds
+setTimeout(
+  cordovaAndIaController.stopPositioning.bind(cordovaAndIaController),
+  20*1000);
