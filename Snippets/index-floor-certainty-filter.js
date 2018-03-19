@@ -29,6 +29,7 @@ var exampleApp = {
     console.log("positioning (re)started");
     this.targetFloorAccuracyReached = false;
     this.floorPlanId = null;
+    this.venueId = null;
   },
 
   onPositioningStopped: function() {
@@ -48,12 +49,17 @@ var exampleApp = {
   onEnterRegion: function(region) {
     if (region.regionType == Region.TYPE_FLOORPLAN) {
       this.floorPlanId = region.regionId;
+    } else if (region.regionType == Region.TYPE_VENUE) {
+      this.venueId = region.regionId;
+      console.log("enter venue "+this.venueId);
     }
   },
 
   onExitRegion: function(region) {
     if (region.regionType == Region.TYPE_FLOORPLAN) {
       this.floorPlanId = null;
+    } else if (region.regionType == Region.TYPE_VENUE) {
+      this.venueId = null;
     }
   }
 };
