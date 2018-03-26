@@ -51,10 +51,38 @@ function ExampleApp() {
 
   var accuracyCircle = null;
   var lastPosition = null;
+  var wayfindingController = null;
 
   this.onFloorChange = function () {
+    console.log("floorChange");
     if (lastPosition) this.onLocationChanged(lastPosition);
+    if (wayfindingController) {
+      wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
+    }
   };
+
+  this.onPositioningStarted = function () {
+    readJsonAsset('www/data/wayfinding-graph.json').then(function (graph) {
+      console.log("initializing wayfinding");
+      buildWayfindingController(graph, map).then(function(wfc) {
+        wayfindingController = wfc;
+        wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
+
+        map.on('mouseup', function (event) {
+          // tap routes to pressed location
+          var floor = floorPlanSelector.getFloorNumber();
+          if (wayfindingController && floor !== null) {
+            wayfindingController.setDestination(
+              event.latlng.lat,
+              event.latlng.lng,
+              floor);
+          }
+        });
+      });
+    }).catch(function (error) {
+      console.log("no wayfinding graph: "+JSON.stringify(error));
+    });
+  }
 
   var floorPlanSelector = new FloorPlanSelector(map, this.onFloorChange.bind(this));
 
@@ -65,6 +93,10 @@ function ExampleApp() {
     if (zoomOngoing) return;
 
     var center = [position.coords.latitude, position.coords.longitude];
+
+    if (wayfindingController) {
+      wayfindingController.updateLocation(position.coords);
+    }
 
     function setCircleProperties() {
       accuracyCircle.setLatLng(center);
@@ -175,6 +207,8 @@ var cordovaAndIaController = {
     this.regionWatchId = IndoorAtlas.watchRegion(
       app.onEnterRegion.bind(app),
       app.onExitRegion.bind(app), onError);
+
+    app.onPositioningStarted();
   }
 };
 

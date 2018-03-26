@@ -23,11 +23,6 @@ and Android
 cordova platform add android
 ```
 
-Add IndoorAtlas Cordova plugin
-```
-cordova plugin add https://github.com/IndoorAtlas/cordova-plugin.git
-```
-
 Build the project and run it
 ```
 cordova build
