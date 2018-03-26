@@ -25,17 +25,17 @@
 
 function ExampleApp() {
 
-	var map = L.map('map').fitWorld();
+  var map = L.map('map').fitWorld();
 
   if (MAPBOX_ACCESS_TOKEN) {
-  	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}{r}.png?access_token=' + MAPBOX_ACCESS_TOKEN, {
-  		maxZoom: 23,
-  		attribution: 'Map data &copy; OpenStreetMap contributors, ' +
-  			'CC-BY-SA, ' +
-  			'Imagery © Mapbox',
-  		id: 'mapbox.light',
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}{r}.png?access_token=' + MAPBOX_ACCESS_TOKEN, {
+      maxZoom: 23,
+      attribution: 'Map data &copy; OpenStreetMap contributors, ' +
+        'CC-BY-SA, ' +
+        'Imagery © Mapbox',
+      id: 'mapbox.light',
       detectRetina: true
-  	}).addTo(map);
+    }).addTo(map);
   }
 
   var currentFloorPlanId = null;
