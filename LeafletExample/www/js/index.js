@@ -49,19 +49,34 @@ function ExampleApp() {
     zoomOngoing = false;
   });
 
-  var currentFloorPlanId = null;
-  var floorPlanView = new FloorPlanView(map);
   var accuracyCircle = null;
+  var lastPosition = null;
+
+  this.onFloorChange = function () {
+    if (lastPosition) this.onLocationChanged(lastPosition);
+  };
+
+  var floorPlanSelector = new FloorPlanSelector(map, this.onFloorChange.bind(this));
 
   this.onLocationChanged = function(position) {
+    lastPosition = position;
+    
     // updating graphics while zooming does not work in Leaflet
     if (zoomOngoing) return;
 
     var center = [position.coords.latitude, position.coords.longitude];
+    console.log(lastPosition);
 
     function setCircleProperties() {
       accuracyCircle.setLatLng(center);
       accuracyCircle.setRadius(position.coords.accuracy);
+
+      var viewFloorNumber = floorPlanSelector.currentFloorNumber;
+      if (viewFloorNumber !== null && viewFloorNumber !== position.coords.floor) {
+        accuracyCircle.setStyle({ color: 'gray' });
+      } else {
+        accuracyCircle.setStyle({ color: 'blue' });
+      }
     }
 
     if (!accuracyCircle) {
@@ -79,28 +94,17 @@ function ExampleApp() {
 
   this.onEnterRegion = function(region) {
     if (region.regionType == Region.TYPE_FLOORPLAN) {
-
-      currentFloorPlanId = region.regionId;
-      console.log("enter floor plan "+currentFloorPlanId);
-      floorPlanView.showAndHideOthers(currentFloorPlanId);
-
+      floorPlanSelector.onEnterFloorPlan(region.regionId);
     } else if (region.regionType == Region.TYPE_VENUE) {
-      console.log("enter venue "+region.regionId);
+      floorPlanSelector.onEnterVenue(region.regionId);
     }
   };
 
   this.onExitRegion = function(region) {
     if (region.regionType == Region.TYPE_FLOORPLAN) {
-      console.log("exit floor plan");
-      currentFloorPlanId = null;
-
-      setTimeout(function () {
-        // don't hide immediately if the callback is followed by
-        // another enter floor plan event
-        if (!currentFloorPlanId) {
-          floorPlanView.hideAll();
-        }
-      }, 100);
+      floorPlanSelector.onExitFloorPlan(region.regionId);
+    }  else if (region.regionType == Region.TYPE_VENUE) {
+      floorPlanSelector.onExitVenue(region.regionId);
     }
   };
 }
