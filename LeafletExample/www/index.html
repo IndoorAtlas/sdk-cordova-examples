@@ -40,29 +40,22 @@ under the License.
 		html, body {
 			height: 100%;
 			margin: 0;
+			padding: 0;
 		}
 		#map {
-			width: 600px;
-			height: 400px;
+			width: 100vw;
+			height: 100%;
 		}
 	</style>
-
-	<style>body { padding: 0; margin: 0; } #map { height: 100%; width: 100vw; }</style>
 </head>
 <body>
 
 <div id='map'></div>
 
-<div class="app">
-  <div id="deviceready" class="blink">
-    <p class="event listening">Connecting to Device</p>
-    <p class="event received">Device is Ready</p>
-  </div>
-</div>
-
 <script type="text/javascript" src="cordova.js"></script>
 <script type="text/javascript" src="js/APIKeys.js"></script>
 <script type="text/javascript" src="js/Leaflet.ImageOverlay.Rotated.js"></script>
+<script type="text/javascript" src="js/FloorPlanUtil.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
 
 </body>
