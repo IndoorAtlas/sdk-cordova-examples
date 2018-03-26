@@ -102,6 +102,9 @@ function FloorPlanSelector(map, onFloorChange) {
     venueCache.get(venueId, getVenue).then(function (venue) {
       currentVenue = venue;
       if (currentVenue.floorPlans.length > 1) {
+        currentVenue.floorPlans.sort(function(a, b) {
+          return a.floorNumber - b.floorNumber;
+        });
         $("#floor-selector").removeClass("hidden");
       } else {
         console.log("not showing floor selector for a single-floor venue");
