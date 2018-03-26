@@ -4,6 +4,8 @@
  * https://github.com/IndoorAtlas/sdk-cordova-examples
  */
 
+// rename this file to APIKeys.js and insert your API keys
+
 // This can be left blank if you do not want to show Mapbox outdoor maps
 // underneath the floor plans. Otherwise get a token at https://www.mapbox.com/
 var MAPBOX_ACCESS_TOKEN = "";
