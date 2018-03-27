@@ -65,7 +65,6 @@ function ExampleApp() {
     if (zoomOngoing) return;
 
     var center = [position.coords.latitude, position.coords.longitude];
-    console.log(lastPosition);
 
     function setCircleProperties() {
       accuracyCircle.setLatLng(center);
