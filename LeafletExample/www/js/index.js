@@ -71,8 +71,7 @@ function ExampleApp() {
       accuracyCircle.setLatLng(center);
       accuracyCircle.setRadius(position.coords.accuracy);
 
-      var viewFloorNumber = floorPlanSelector.currentFloorNumber;
-      if (viewFloorNumber !== null && viewFloorNumber !== position.coords.floor) {
+      if (floorPlanSelector.getFloorNumber() !== position.coords.floor) {
         accuracyCircle.setStyle({ color: 'gray' });
       } else {
         accuracyCircle.setStyle({ color: 'blue' });

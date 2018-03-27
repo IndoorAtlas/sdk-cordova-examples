@@ -59,10 +59,12 @@ function FloorPlanCache() {
 }
 
 // can hide an show multiple floor plans on a map
-function FloorPlanView(map) {
+function FloorPlanView(map, cache) {
   var layers = {};
   var visibleFloorPlans = {};
-  var cache = new FloorPlanCache();
+  if (!cache) {
+    cache = new FloorPlanCache();
+  }
   var that = this;
 
   function asLatLng(coords) {

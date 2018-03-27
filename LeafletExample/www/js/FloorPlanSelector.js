@@ -25,13 +25,13 @@
 
 function FloorPlanSelector(map, onFloorChange) {
 
-  var floorPlanView = new FloorPlanView(map);
-  var currentFloorPlanId = null;
+  var floorPlanCache = new FloorPlanCache();
+  var floorPlanView = new FloorPlanView(map, floorPlanCache);
   var venueCache = new PromiseCache();
   var currentVenue = null;
+  var currentFloorPlanId = null;
+  var currentFloorPlan = null;
   var that = this;
-
-  this.currentFloorNumber = null;
 
   function getVenue(id) {
     var VENUE_API_ENDPOINT = 'https://positioning-api.indooratlas.com/v1';
@@ -44,22 +44,27 @@ function FloorPlanSelector(map, onFloorChange) {
   }
 
   function findCurrentFloorPlanIndex() {
-    if (!currentVenue) return -1;
+    if (!currentVenue && !currentFloorPlan) return -1;
     var fps = currentVenue.floorPlans;
     for (var index = 0; index < fps.length; index++) {
-      if (fps[index].id === currentFloorPlanId) return index;
+      if (fps[index].id === currentFloorPlan.id) return index;
     }
     return -1;
   }
 
-  function showAndUpdateCurrentFloorNumber() {
-    var index = findCurrentFloorPlanIndex();
-    if (index < 0) {
-      that.currentFloorNumber = null;
-      return
-    }
-    that.currentFloorNumber = currentVenue.floorPlans[index].floorNumber;
-    $('#floor-number').text('' + that.currentFloorNumber);
+  function showCurrentFloorNumber() {
+    $('#floor-number').text('' + that.getFloorNumber());
+  }
+
+  function setCurrentFloorPlanId(floorPlanId) {
+    currentFloorPlanId = floorPlanId;
+    floorPlanView.showAndHideOthers(currentFloorPlanId);
+    floorPlanCache.get(floorPlanId).then(function (floorPlan) {
+      if (currentFloorPlanId !== floorPlan.id) return;
+      currentFloorPlan = floorPlan;
+      showCurrentFloorNumber();
+      if (onFloorChange) onFloorChange(floorPlan);
+    });
   }
 
   function changeFloor(delta) {
@@ -68,21 +73,22 @@ function FloorPlanSelector(map, onFloorChange) {
     // new floor
     index += delta;
     if (index < 0 || index >= currentVenue.floorPlans.length) return;
+
     currentFloorPlanId = currentVenue.floorPlans[index].id;
-    floorPlanView.showAndHideOthers(currentFloorPlanId);
-    showAndUpdateCurrentFloorNumber();
-    if (onFloorChange) onFloorChange();
+    setCurrentFloorPlanId(currentFloorPlanId);
   }
 
   $("#floor-up").click(function () { changeFloor(1); });
   $("#floor-down").click(function () { changeFloor(-1); });
 
+  this.getFloorNumber = function () {
+    if (!currentFloorPlan) return null;
+    return currentFloorPlan.floorLevel;
+  }
+
   this.onEnterFloorPlan = function (floorPlanId) {
     console.log("enter floor plan "+floorPlanId);
-    currentFloorPlanId = floorPlanId;
-    floorPlanView.showAndHideOthers(floorPlanId);
-    showAndUpdateCurrentFloorNumber();
-    if (onFloorChange) onFloorChange();
+    setCurrentFloorPlanId(floorPlanId);
   };
 
   this.onExitFloorPlan = function (floorPlanId) {
@@ -109,7 +115,6 @@ function FloorPlanSelector(map, onFloorChange) {
       } else {
         console.log("not showing floor selector for a single-floor venue");
       }
-      showAndUpdateCurrentFloorNumber();
     });
   };
 
