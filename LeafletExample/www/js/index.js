@@ -52,6 +52,7 @@ function ExampleApp() {
   var accuracyCircle = null;
   var lastPosition = null;
   var wayfindingController = null;
+  var blueDotMarker = null;
 
   this.onFloorChange = function () {
     console.log("floorChange");
@@ -88,7 +89,7 @@ function ExampleApp() {
 
   this.onLocationChanged = function(position) {
     lastPosition = position;
-    
+
     // updating graphics while zooming does not work in Leaflet
     if (zoomOngoing) return;
 
@@ -98,27 +99,46 @@ function ExampleApp() {
       wayfindingController.updateLocation(position.coords);
     }
 
-    function setCircleProperties() {
+    function setBlueDotProperties() {
       accuracyCircle.setLatLng(center);
       accuracyCircle.setRadius(position.coords.accuracy);
 
       if (floorPlanSelector.getFloorNumber() !== position.coords.floor) {
+        
+        blueDotMarker.setLatLng(center);
+
         accuracyCircle.setStyle({ color: 'gray' });
+        if (map.hasLayer(blueDotMarker)) {
+          blueDotMarker.remove();
+        }
       } else {
         accuracyCircle.setStyle({ color: 'blue' });
+        if (!map.hasLayer(blueDotMarker)) {
+          blueDotMarker.addTo(map);
+        }
       }
     }
 
     if (!accuracyCircle) {
       // first location
-      accuracyCircle = L.circle([0,0], {radius: 1});
-      setCircleProperties();
+      accuracyCircle = L.circle([0,0], { radius: 1, opacity: 0 });
+      blueDotMarker = L.marker([0,0], {
+        icon: L.icon({
+          iconUrl: 'img/blue_dot@2x.png',
+          iconSize: [20, 20],
+          iconAnchor: [10, 10]
+        })
+      });
+
+      setBlueDotProperties();
+
       accuracyCircle.addTo(map);
+      blueDotMarker.addTo(map);
 
       var ZOOM_LEVEL = 19;
       map.setView(center, ZOOM_LEVEL);
     } else {
-      setCircleProperties();
+      setBlueDotProperties();
     }
   };
 
