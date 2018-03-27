@@ -25,7 +25,9 @@
 
 function ExampleApp() {
 
-  var map = L.map('map').fitWorld();
+  var map = L.map('map', {
+    zoomControl: false
+  }).fitWorld();
 
   if (MAPBOX_ACCESS_TOKEN) {
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}{r}.png?access_token=' + MAPBOX_ACCESS_TOKEN, {
@@ -38,11 +40,23 @@ function ExampleApp() {
     }).addTo(map);
   }
 
+  // fix Leaflet zooming bugs
+  var zoomOngoing = false;
+  map.on('zoomstart', function () {
+    zoomOngoing = true;
+  });
+  map.on('zoomend', function () {
+    zoomOngoing = false;
+  });
+
   var currentFloorPlanId = null;
   var floorPlanView = new FloorPlanView(map);
   var accuracyCircle = null;
 
   this.onLocationChanged = function(position) {
+    // updating graphics while zooming does not work in Leaflet
+    if (zoomOngoing) return;
+
     var center = [position.coords.latitude, position.coords.longitude];
 
     function setCircleProperties() {
