@@ -121,6 +121,9 @@ var cordovaAndIaController = {
 
   // deviceready Event Handler
   onDeviceReady: function() {
+    if (!window.Promise) {
+      window.Promise = IAPromise;
+    }
     this.configureIA();
   },
 
