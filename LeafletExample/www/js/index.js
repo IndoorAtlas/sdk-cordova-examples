@@ -103,9 +103,10 @@ function ExampleApp() {
       accuracyCircle.setLatLng(center);
       accuracyCircle.setRadius(position.coords.accuracy);
 
+      blueDotMarker.setLatLng(center);
+      blueDotMarker.setRotationAngle(position.coords.heading);
+
       if (floorPlanSelector.getFloorNumber() !== position.coords.floor) {
-        
-        blueDotMarker.setLatLng(center);
 
         accuracyCircle.setStyle({ color: 'gray' });
         if (map.hasLayer(blueDotMarker)) {
@@ -124,9 +125,9 @@ function ExampleApp() {
       accuracyCircle = L.circle([0,0], { radius: 1, opacity: 0 });
       blueDotMarker = L.marker([0,0], {
         icon: L.icon({
-          iconUrl: 'img/blue_dot@2x.png',
-          iconSize: [20, 20],
-          iconAnchor: [10, 10]
+          iconUrl: 'img/blue_dot.png',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
         })
       });
 
