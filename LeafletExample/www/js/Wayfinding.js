@@ -34,30 +34,84 @@ function WayfindingController(wayfinder, map) {
   var currentLocation = null;
   var currentRoute = null;
 
+  function applyShortcutsBasedOnAccuracy(route) {
+    var remainingSlack = Math.max(currentLocation.accuracy, 20);
+
+    remainingSlack -= route[0].length;
+    route = route.slice(1); // always skip first artificial leg
+
+    while (route.length > 0 &&
+      route[0].length < remainingSlack &&
+      route[0].end.floor === route[0].begin.floor) {
+
+      remainingSlack -= route[0].length;
+      route = route.slice(1);
+    }
+    return route;
+  }
+
   function updatePolylines() {
     // Clear previous polylines from the map
     wayfindingRoutePolylines.map(function(pl) { pl.remove(); });
     wayfindingRoutePolylines = [];
 
-    if (!currentRoute || currentRoute.length === 0) {
+    if (!currentRoute || currentRoute.length === 0 || !currentLocation) {
       return;
     }
-    var route = currentRoute.slice(0);
+    var route = applyShortcutsBasedOnAccuracy(currentRoute);
+    if (route.length === 0) {
+      var dest = currentRoute[currentRoute.length-1].end;
+      // keep endpoint for visualization of direct & straight routes from
+      // the current location to destination
+      route = [{
+        begin: dest,
+        end: dest
+      }];
+    }
+
+    // Draw polylines on the map
+    function addPolyline(routePiece, style) {
+
+      var latlngs = routePiece.map(function (legNode) {
+        return [legNode.latitude, legNode.longitude];
+      });
+
+      var pl = L.polyline(latlngs, style).addTo(map);
+      wayfindingRoutePolylines.push(pl);
+    }
+
+    function currentFloorStyle() {
+      return { color: 'blue', opacity: 0.7, weight: 5 };
+    }
+
+    function differentFloorStyle() {
+      return { color: 'gray', opacity: 0.5, weight: 5 };
+    }
+
+    function makeDashed(style) {
+      style.dashArray = "3, 10";
+      return style;
+    }
+
+    // dashed line: current location to route begin
+    addPolyline([currentLocation, route[0].begin], makeDashed(
+      currentLocation.floor === currentFloor
+        ? currentFloorStyle()
+        : differentFloorStyle()
+    ));
 
     // For visualization, split returned multi-floor route to multiple
     // parts: the part of the current floor and others
     // the part on the current floor and rest of the route on other floors
-    var routes = [];
+    var routePieces = [];
     var isCurrentFloor = route[0].begin.floor == currentFloor;
     var currentPiece = [route[0].begin];
 
-    // split to continuous subroutes where the floor does not change
-    var legIndex = 0;
     for (var legIndex = 0; legIndex < route.length; legIndex++) {
       // Weird bug on iOS: changing != to !== here may break stuff
       var nowCurrentFloor = route[legIndex].end.floor == currentFloor;
       if (nowCurrentFloor != isCurrentFloor) {
-        routes.push(currentPiece);
+        routePieces.push(currentPiece);
         if (!isCurrentFloor) {
           currentPiece.push(route[legIndex].end);
           currentPiece = [];
@@ -68,31 +122,17 @@ function WayfindingController(wayfinder, map) {
       }
       currentPiece.push(route[legIndex].end);
     }
+    routePieces.push(currentPiece);
 
-    if (currentPiece.length > 1) {
-      routes.push(currentPiece);
-    }
-
-    // Draw polylines on the map
-    function addPolyline(route, style) {
-
-      var latlngs = route.map(function (legNode) {
-        return [legNode.latitude, legNode.longitude];
-      });
-
-      var pl = L.polyline(latlngs, style).addTo(map);
-      wayfindingRoutePolylines.push(pl);
-    }
-
-    routes.forEach(function (route) {
-      console.log(route);
+    routePieces.forEach(function (piece) {
+      if (piece.length < 2) return;
       var style;
-      if (route[0].floor == currentFloor && route[1].floor == currentFloor) {
-        style = { color: 'blue', opacity: 0.7, weight: 5 };
+      if (piece[0].floor == currentFloor && piece[1].floor == currentFloor) {
+        style = currentFloorStyle();
       } else {
-        style = { color: 'gray', opacity: 0.5, weight: 5 };
+        style = differentFloorStyle();
       }
-      addPolyline(route, style);
+      addPolyline(piece, style);
     });
   }
 
@@ -100,7 +140,7 @@ function WayfindingController(wayfinder, map) {
     wayfinder.getRoute().then(function(result) {
       currentRoute = result.route;
       updatePolylines();
-    }).catch(alert);
+    });
   }
 
   this.updateLocation = function (location) {
