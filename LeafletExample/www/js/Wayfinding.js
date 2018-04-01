@@ -31,87 +31,90 @@ function buildWayfindingController(graph, map) {
 function WayfindingController(wayfinder, map) {
   var wayfindingRoutePolylines = [];
   var currentFloor = null;
+  var currentLocation = null;
+  var currentRoute = null;
 
   function updatePolylines() {
-    var success = function(result) {
-      var route = result.route;
+    // Clear previous polylines from the map
+    wayfindingRoutePolylines.map(function(pl) { pl.remove(); });
+    wayfindingRoutePolylines = [];
 
-      // Clear previous polylines from the map
-      wayfindingRoutePolylines.map(function(pl) { pl.remove(); });
-      wayfindingRoutePolylines = [];
+    if (!currentRoute || currentRoute.length === 0) {
+      return;
+    }
+    var route = currentRoute.slice(0);
 
-      if (route === null || route.length === 0) {
-        // Null just clears the route
-        return;
-      }
+    // For visualization, split returned multi-floor route to multiple
+    // parts: the part of the current floor and others
+    // the part on the current floor and rest of the route on other floors
+    var routes = [];
+    var isCurrentFloor = route[0].begin.floor == currentFloor;
+    var currentPiece = [route[0].begin];
 
-      // For visualization, split returned multi-floor route to multiple
-      // parts: the part of the current floor and others
-      // the part on the current floor and rest of the route on other floors
-      var routes = [];
-      var isCurrentFloor = route[0].begin.floor == currentFloor;
-      var currentRoute = [route[0].begin];
-
-      // split to continuous subroutes where the floor does not change
-      var legIndex = 0;
-      for (var legIndex = 0; legIndex < route.length; legIndex++) {
-        // Weird bug on iOS: changing != to !== here may break stuff
-        var nowCurrentFloor = route[legIndex].end.floor == currentFloor;
-        if (nowCurrentFloor != isCurrentFloor) {
-          routes.push(currentRoute);
-          if (!isCurrentFloor) {
-            currentRoute.push(route[legIndex].end);
-            currentRoute = [];
-          } else {
-            currentRoute = [route[legIndex].begin];
-          }
-          nowCurrentFloor = isCurrentFloor;
-        }
-        currentRoute.push(route[legIndex].end);
-      }
-
-      if (currentRoute.length > 1) {
-        routes.push(currentRoute);
-      }
-
-      // Draw polylines on the map
-      function addPolyline(route, style) {
-
-        var latlngs = route.map(function (legNode) {
-          return [legNode.latitude, legNode.longitude];
-        });
-
-        var pl = L.polyline(latlngs, style).addTo(map);
-        wayfindingRoutePolylines.push(pl);
-      }
-
-      routes.forEach(function (route) {
-        console.log(route);
-        var style;
-        if (route[0].floor == currentFloor && route[1].floor == currentFloor) {
-          style = { color: 'blue', opacity: 0.7, weight: 5 };
+    // split to continuous subroutes where the floor does not change
+    var legIndex = 0;
+    for (var legIndex = 0; legIndex < route.length; legIndex++) {
+      // Weird bug on iOS: changing != to !== here may break stuff
+      var nowCurrentFloor = route[legIndex].end.floor == currentFloor;
+      if (nowCurrentFloor != isCurrentFloor) {
+        routes.push(currentPiece);
+        if (!isCurrentFloor) {
+          currentPiece.push(route[legIndex].end);
+          currentPiece = [];
         } else {
-          style = { color: 'gray', opacity: 0.5, weight: 5 };
+          currentPiece = [route[legIndex].begin];
         }
-        addPolyline(route, style);
-      });
-    };
+        nowCurrentFloor = isCurrentFloor;
+      }
+      currentPiece.push(route[legIndex].end);
+    }
 
-    wayfinder.getRoute().then(success).catch(alert);
-  };
+    if (currentPiece.length > 1) {
+      routes.push(currentPiece);
+    }
+
+    // Draw polylines on the map
+    function addPolyline(route, style) {
+
+      var latlngs = route.map(function (legNode) {
+        return [legNode.latitude, legNode.longitude];
+      });
+
+      var pl = L.polyline(latlngs, style).addTo(map);
+      wayfindingRoutePolylines.push(pl);
+    }
+
+    routes.forEach(function (route) {
+      console.log(route);
+      var style;
+      if (route[0].floor == currentFloor && route[1].floor == currentFloor) {
+        style = { color: 'blue', opacity: 0.7, weight: 5 };
+      } else {
+        style = { color: 'gray', opacity: 0.5, weight: 5 };
+      }
+      addPolyline(route, style);
+    });
+  }
+
+  function updateRoute() {
+    wayfinder.getRoute().then(function(result) {
+      currentRoute = result.route;
+      updatePolylines();
+    }).catch(alert);
+  }
 
   this.updateLocation = function (location) {
+    currentLocation = location;
     wayfinder.setLocation(location.latitude, location.longitude, location.floor);
-    updatePolylines();
+    updateRoute();
   };
 
   this.setDestination = function (lat, lon, floor) {
     wayfinder.setDestination(lat, lon, floor);
-    updatePolylines();
+    updateRoute();
   };
 
   this.setCurrentFloor = function (floor) {
-    console.log("set "+floor);
     if (floor !== null) currentFloor = floor;
     updatePolylines();
   }
