@@ -2,71 +2,18 @@
  * IndoorAtlas Wayfinding example
  */
 
-// Read a static JSON file
-function readJsonAsset(assetName, callback) {
-  var fileName = cordova.file.applicationDirectory + assetName;
-  return new Promise(function (resolve, reject) {
-    window.resolveLocalFileSystemURL(fileName, function (fileEntry) {
-      fileEntry.file(function (file) {
-        var reader = new FileReader();
-        reader.onloadend = function (e) {
-          if (!this.result) {
-            reject("no contents");
-          } else {
-            resolve(this.result);
-          }
-        };
-        reader.readAsText(file);
-      }, reject);
-    }, reject);
-  });
-}
-
-function buildWayfindingController(graph, map) {
-  return IndoorAtlas.buildWayfinder(graph).then(function(wayfinder) {
-    return new WayfindingController(wayfinder, map);
-  });
-}
-
-function WayfindingController(wayfinder, map) {
+function WayfindingController(map) {
   var wayfindingRoutePolylines = [];
   var currentFloor = null;
-  var currentLocation = null;
   var currentRoute = null;
-
-  function applyShortcutsBasedOnAccuracy(route) {
-    var remainingSlack = Math.max(currentLocation.accuracy, 20);
-
-    remainingSlack -= route[0].length;
-    route = route.slice(1); // always skip first artificial leg
-
-    while (route.length > 0 &&
-      route[0].length < remainingSlack &&
-      route[0].end.floor === route[0].begin.floor) {
-
-      remainingSlack -= route[0].length;
-      route = route.slice(1);
-    }
-    return route;
-  }
 
   function updatePolylines() {
     // Clear previous polylines from the map
     wayfindingRoutePolylines.map(function(pl) { pl.remove(); });
     wayfindingRoutePolylines = [];
 
-    if (!currentRoute || currentRoute.length === 0 || !currentLocation) {
+    if (!currentRoute || currentRoute.length === 0) {
       return;
-    }
-    var route = applyShortcutsBasedOnAccuracy(currentRoute);
-    if (route.length === 0) {
-      var dest = currentRoute[currentRoute.length-1].end;
-      // keep endpoint for visualization of direct & straight routes from
-      // the current location to destination
-      route = [{
-        begin: dest,
-        end: dest
-      }];
     }
 
     // Draw polylines on the map
@@ -94,11 +41,19 @@ function WayfindingController(wayfinder, map) {
     }
 
     // dashed line: current location to route begin
-    addPolyline([currentLocation, route[0].begin], makeDashed(
-      currentLocation.floor === currentFloor
+    addPolyline([currentRoute[0].begin, currentRoute[0].end], makeDashed(
+      currentRoute[0].begin.floor === currentFloor
         ? currentFloorStyle()
         : differentFloorStyle()
     ));
+
+    // always skip first artificial leg (special rendering)
+    var route = currentRoute.slice(1);
+
+    // direct route from location to destination
+    if (route.length === 0) {
+      return;
+    }
 
     // For visualization, split returned multi-floor route to multiple
     // parts: the part of the current floor and others
@@ -136,23 +91,10 @@ function WayfindingController(wayfinder, map) {
     });
   }
 
-  function updateRoute() {
-    wayfinder.getRoute().then(function(result) {
-      currentRoute = result.route;
-      updatePolylines();
-    });
+  this.updateRoute = function (route) {
+    currentRoute = route.legs;
+    updatePolylines();
   }
-
-  this.updateLocation = function (location) {
-    currentLocation = location;
-    wayfinder.setLocation(location.latitude, location.longitude, location.floor);
-    updateRoute();
-  };
-
-  this.setDestination = function (lat, lon, floor) {
-    wayfinder.setDestination(lat, lon, floor);
-    updateRoute();
-  };
 
   this.setCurrentFloor = function (floor) {
     if (floor !== null) currentFloor = floor;

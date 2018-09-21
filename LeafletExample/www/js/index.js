@@ -53,6 +53,7 @@ function ExampleApp() {
   var lastPosition = null;
   var wayfindingController = null;
   var blueDotMarker = null;
+  var wayfindingController = new WayfindingController(map);
 
   this.onFloorChange = function () {
     console.log("floorChange");
@@ -63,26 +64,18 @@ function ExampleApp() {
   };
 
   this.onPositioningStarted = function () {
-    readJsonAsset('www/data/wayfinding-graph.json').then(function (graph) {
-      console.log("initializing wayfinding");
-      buildWayfindingController(graph, map).then(function(wfc) {
-        wayfindingController = wfc;
-        wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
-
-        map.on('mouseup', function (event) {
-          // tap routes to pressed location
-          var floor = floorPlanSelector.getFloorNumber();
-          if (wayfindingController && floor !== null) {
-            wayfindingController.setDestination(
-              event.latlng.lat,
-              event.latlng.lng,
-              floor);
-          }
-        });
-      });
-    }).catch(function (error) {
-      console.log("no wayfinding graph: "+JSON.stringify(error));
+    map.on('mouseup', function (event) {
+      // tap routes to pressed location
+      var floor = floorPlanSelector.getFloorNumber();
+      if (floor !== null) {
+        cordovaAndIaController.requestWayfindingUpdates(
+          event.latlng.lat,
+          event.latlng.lng,
+          floor);
+      }
     });
+
+    wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
   }
 
   var floorPlanSelector = new FloorPlanSelector(map, this.onFloorChange.bind(this));
@@ -94,10 +87,6 @@ function ExampleApp() {
     if (zoomOngoing) return;
 
     var center = [position.coords.latitude, position.coords.longitude];
-
-    if (wayfindingController) {
-      wayfindingController.updateLocation(position.coords);
-    }
 
     function setBlueDotProperties() {
       accuracyCircle.setLatLng(center);
@@ -158,6 +147,10 @@ function ExampleApp() {
       floorPlanSelector.onExitVenue(region.regionId);
     }
   };
+
+  this.onWayfindingUpdate = function(route) {
+    wayfindingController.updateRoute(route);
+  };
 }
 
 var cordovaAndIaController = {
@@ -176,9 +169,6 @@ var cordovaAndIaController = {
 
   // deviceready Event Handler
   onDeviceReady: function() {
-    if (!window.Promise) {
-      window.Promise = IAPromise;
-    }
     this.configureIA();
   },
 
@@ -230,6 +220,21 @@ var cordovaAndIaController = {
       app.onExitRegion.bind(app), onError);
 
     app.onPositioningStarted();
+  },
+
+  requestWayfindingUpdates: function(latitude, longitude, floor) {
+    console.log("set/changed wayfinding destination");
+    var onError = this.IAServiceFailed.bind(this);
+    IndoorAtlas.requestWayfindingUpdates({
+      latitude: latitude,
+      longitude: longitude,
+      floor: floor
+    }, app.onWayfindingUpdate.bind(app), onError);
+  },
+
+  removeWayfindingUpdates: function() {
+    console.log("stop wayfinding");
+    IndoorAtlas.removeWayfindingUpdates();
   }
 };
 
