@@ -29,6 +29,7 @@ function FloorPlanSelector(map, onFloorChange) {
   var currentVenue = null;
   var currentFloorPlan = null;
   var that = this;
+  var lockedFloor = null;
 
   function getVenue(id) {
     var VENUE_API_ENDPOINT = 'https://positioning-api.indooratlas.com/v1';
@@ -73,6 +74,27 @@ function FloorPlanSelector(map, onFloorChange) {
 
   $("#floor-up").click(function () { changeFloor(1); });
   $("#floor-down").click(function () { changeFloor(-1); });
+  $("#floor-lock").click(function () {
+    var floorNumber = that.getFloorNumber();
+    if (floorNumber === null) return;
+
+    if (floorNumber === lockedFloor) {
+      floorNumber = null;
+    }
+
+    if (lockedFloor !== floorNumber) {
+      lockedFloor = floorNumber;
+      if (lockedFloor === null) {
+        console.log("unlock floor");
+        IndoorAtlas.unlockFloor();
+      } else {
+        console.log("locking floor "+lockedFloor);
+        IndoorAtlas.lockFloor(lockedFloor);
+      }
+    }
+
+    $("#floor-lock").toggleClass("active-lock", lockedFloor !== null);
+  });
 
   this.getFloorNumber = function () {
     if (!currentFloorPlan) return null;
@@ -99,9 +121,9 @@ function FloorPlanSelector(map, onFloorChange) {
   this.onEnterVenue = function (venue) {
     currentVenue = venue;
     console.log("enter venue "+venue.id);
-    if (currentVenue.floorPlans.length > 1) {
+    if (currentVenue.floorPlans.length > 0) { // enables floor lock to single floor venue
       currentVenue.floorPlans.sort(function(a, b) {
-        return a.floorNumber - b.floorNumber;
+        return a.floorLevel - b.floorLevel;
       });
       $("#floor-selector").removeClass("hidden");
     } else {

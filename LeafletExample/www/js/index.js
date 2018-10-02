@@ -73,6 +73,7 @@ function ExampleApp() {
           event.latlng.lng,
           floor);
       }
+      IndoorAtlas.lockIndoors(true); // also lock indoors on click
     });
 
     wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
@@ -154,6 +155,7 @@ function ExampleApp() {
       console.log("wayfinding finished!");
       wayfindingController.hideRoute();
       cordovaAndIaController.removeWayfindingUpdates();
+      IndoorAtlas.lockIndoors(false); // also release indoor lock when stopping WF
     }
   };
 }
