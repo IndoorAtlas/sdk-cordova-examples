@@ -96,6 +96,19 @@ function WayfindingController(map) {
     updatePolylines();
   }
 
+  this.hideRoute = function () {
+    currentRoute = null;
+    updatePolylines();
+  }
+
+  this.routeFinished = function () {
+    if (!currentRoute || currentRoute.length === 0) return false;
+    var totalLength = 0;
+    currentRoute.forEach(function (leg) { totalLength += leg.length; });
+    var FINISHED_THRESHOLD_METERS = 10.0;
+    return totalLength < FINISHED_THRESHOLD_METERS;
+  }
+
   this.setCurrentFloor = function (floor) {
     if (floor !== null) currentFloor = floor;
     updatePolylines();

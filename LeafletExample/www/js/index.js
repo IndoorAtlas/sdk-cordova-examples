@@ -150,6 +150,11 @@ function ExampleApp() {
 
   this.onWayfindingUpdate = function(route) {
     wayfindingController.updateRoute(route);
+    if (wayfindingController.routeFinished()) {
+      console.log("wayfinding finished!");
+      wayfindingController.hideRoute();
+      cordovaAndIaController.removeWayfindingUpdates();
+    }
   };
 }
 
