@@ -25,11 +25,8 @@
 
 function FloorPlanSelector(map, onFloorChange) {
 
-  var floorPlanCache = new FloorPlanCache();
-  var floorPlanView = new FloorPlanView(map, floorPlanCache);
-  var venueCache = new PromiseCache();
+  var floorPlanView = new FloorPlanView(map);
   var currentVenue = null;
-  var currentFloorPlanId = null;
   var currentFloorPlan = null;
   var that = this;
 
@@ -56,15 +53,11 @@ function FloorPlanSelector(map, onFloorChange) {
     $('#floor-number').text('' + that.getFloorNumber());
   }
 
-  function setCurrentFloorPlanId(floorPlanId) {
-    currentFloorPlanId = floorPlanId;
-    floorPlanView.showAndHideOthers(currentFloorPlanId);
-    floorPlanCache.get(floorPlanId).then(function (floorPlan) {
-      if (currentFloorPlanId !== floorPlan.id) return;
-      currentFloorPlan = floorPlan;
-      showCurrentFloorNumber();
-      if (onFloorChange) onFloorChange(floorPlan);
-    });
+  function setCurrentFloorPlan(floorPlan) {
+    currentFloorPlan = floorPlan;
+    floorPlanView.showAndHideOthers(floorPlan);
+    showCurrentFloorNumber();
+    if (onFloorChange) onFloorChange(floorPlan);
   }
 
   function changeFloor(delta) {
@@ -74,8 +67,8 @@ function FloorPlanSelector(map, onFloorChange) {
     index += delta;
     if (index < 0 || index >= currentVenue.floorPlans.length) return;
 
-    currentFloorPlanId = currentVenue.floorPlans[index].id;
-    setCurrentFloorPlanId(currentFloorPlanId);
+    currentFloorPlan = currentVenue.floorPlans[index];
+    setCurrentFloorPlan(currentFloorPlan);
   }
 
   $("#floor-up").click(function () { changeFloor(1); });
@@ -86,39 +79,37 @@ function FloorPlanSelector(map, onFloorChange) {
     return currentFloorPlan.floorLevel;
   }
 
-  this.onEnterFloorPlan = function (floorPlanId) {
-    console.log("enter floor plan "+floorPlanId);
-    setCurrentFloorPlanId(floorPlanId);
+  this.onEnterFloorPlan = function (floorPlan) {
+    console.log("enter floor plan "+floorPlan.id);
+    setCurrentFloorPlan(floorPlan);
   };
 
-  this.onExitFloorPlan = function (floorPlanId) {
-    currentFloorPlanId = null;
+  this.onExitFloorPlan = function () {
+    currentFloorPlan = null;
 
     setTimeout(function () {
       // don't hide immediately if the callback is followed by
       // another enter floor plan event
-      if (!currentFloorPlanId) {
+      if (!currentFloorPlan) {
         floorPlanView.hideAll();
       }
     }, 100);
   };
 
-  this.onEnterVenue = function (venueId) {
-    console.log("enter venue "+venueId);
-    venueCache.get(venueId, getVenue).then(function (venue) {
-      currentVenue = venue;
-      if (currentVenue.floorPlans.length > 1) {
-        currentVenue.floorPlans.sort(function(a, b) {
-          return a.floorNumber - b.floorNumber;
-        });
-        $("#floor-selector").removeClass("hidden");
-      } else {
-        console.log("not showing floor selector for a single-floor venue");
-      }
-    });
+  this.onEnterVenue = function (venue) {
+    currentVenue = venue;
+    console.log("enter venue "+venue.id);
+    if (currentVenue.floorPlans.length > 1) {
+      currentVenue.floorPlans.sort(function(a, b) {
+        return a.floorNumber - b.floorNumber;
+      });
+      $("#floor-selector").removeClass("hidden");
+    } else {
+      console.log("not showing floor selector for a single-floor venue");
+    }
   };
 
-  this.onExitVenue = function (venueId) {
+  this.onExitVenue = function () {
     $("#floor-selector").addClass("hidden");
   };
 }

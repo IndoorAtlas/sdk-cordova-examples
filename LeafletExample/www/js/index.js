@@ -134,17 +134,17 @@ function ExampleApp() {
 
   this.onEnterRegion = function(region) {
     if (region.regionType == Region.TYPE_FLOORPLAN) {
-      floorPlanSelector.onEnterFloorPlan(region.regionId);
-    } else if (region.regionType == Region.TYPE_VENUE) {
-      floorPlanSelector.onEnterVenue(region.regionId);
+      floorPlanSelector.onEnterFloorPlan(region.floorPlan);
+    } else if (region.regionType == Region.TYPE_VENUE && region.venue) {
+      floorPlanSelector.onEnterVenue(region.venue);
     }
   };
 
   this.onExitRegion = function(region) {
     if (region.regionType == Region.TYPE_FLOORPLAN) {
-      floorPlanSelector.onExitFloorPlan(region.regionId);
+      floorPlanSelector.onExitFloorPlan();
     }  else if (region.regionType == Region.TYPE_VENUE) {
-      floorPlanSelector.onExitVenue(region.regionId);
+      floorPlanSelector.onExitVenue();
     }
   };
 

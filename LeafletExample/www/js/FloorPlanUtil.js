@@ -23,48 +23,10 @@
 * under the License.
 */
 
-// a generic async cache
-function PromiseCache() {
-  var pending = {};
-  var values = {};
-
-  this.get = function (key, promiseGetter) {
-    if (values[key]) {
-      return Promise.resolve(values[key]);
-    }
-    if (pending[key]) {
-      return pending[key];
-    }
-    pending[key] = promiseGetter(key).then(function (value) {
-      delete pending[key];
-      values[key] = value;
-      return value;
-    });
-    return pending[key];
-  };
-};
-
-// handles caching of floor plan metadata and fetching it from the IA Cloud
-function FloorPlanCache() {
-  var cache = new PromiseCache();
-
-  // returns a promise
-  this.get = function (id) {
-    return cache.get(id, function (id) {
-      return new Promise(function (resolve, reject) {
-        IndoorAtlas.fetchFloorPlanWithId(id, resolve, reject);
-      });
-    });
-  };
-}
-
 // can hide an show multiple floor plans on a map
-function FloorPlanView(map, cache) {
+function FloorPlanView(map) {
   var layers = {};
   var visibleFloorPlans = {};
-  if (!cache) {
-    cache = new FloorPlanCache();
-  }
   var that = this;
 
   function asLatLng(coords) {
@@ -78,27 +40,24 @@ function FloorPlanView(map, cache) {
       asLatLng(floorPlan.bottomLeft));
   }
 
-  this.show = function(id) {
+  this.show = function(floorPlan) {
+    var id = floorPlan.id;
     if (visibleFloorPlans[id]) return;
     visibleFloorPlans[id] = true;
 
     if (layers[id]) {
       layers[id].addTo(map);
     } else {
-      cache.get(id).then(function (floorPlan) {
-        if (!layers[id]) {
-          layers[id] = buildImageOverlay(floorPlan);
-        }
-        if (visibleFloorPlans[id]) {
-          layers[id].addTo(map);
-        }
-      }).catch(function (error) {
-        that.onError(id, error);
-      });
+      if (!layers[id]) {
+        layers[id] = buildImageOverlay(floorPlan);
+      }
+      if (visibleFloorPlans[id]) {
+        layers[id].addTo(map);
+      }
     }
   };
 
-  this.hide = function(id) {
+  function hideById(id) {
     if (!visibleFloorPlans[id]) return;
     if (layers[id]) {
       layers[id].remove();
@@ -106,25 +65,26 @@ function FloorPlanView(map, cache) {
     delete visibleFloorPlans[id];
   };
 
-  this.showAndHideOthers = function (id) {
+  this.hide = function(floorPlan) {
+    hideById(floorPlan.id);
+  }
+
+  this.showAndHideOthers = function (floorPlan) {
+    var id = floorPlan.id;
     var toRemove = [];
     for (var fpId in visibleFloorPlans) {
       if (fpId != id) toRemove.push(fpId);
     }
-    this.show(id);
+    this.show(floorPlan);
     // remove after show to reduce blinking
     toRemove.forEach(function (fpId) {
-      that.hide(fpId);
+      hideById(fpId);
     });
   };
 
   this.hideAll = function () {
     for (var fpId in visibleFloorPlans) {
-      this.hide(fpId);
+      hideById(fpId);
     }
   }
-
-  this.onError = function (id, error) {
-    alert("Failed to fetch floor plan with ID "+id+": "+JSON.stringify(error));
-  };
 }
