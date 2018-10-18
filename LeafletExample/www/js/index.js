@@ -53,6 +53,7 @@ function ExampleApp() {
   var lastPosition = null;
   var wayfindingController = null;
   var blueDotMarker = null;
+  var redDotMarker = null;
   var wayfindingController = new WayfindingController(map);
 
   this.onFloorChange = function () {
@@ -93,6 +94,7 @@ function ExampleApp() {
       accuracyCircle.setLatLng(center);
       accuracyCircle.setRadius(position.coords.accuracy);
 
+      redDotMarker.setLatLng(center);
       blueDotMarker.setLatLng(center);
       blueDotMarker.setRotationAngle(position.coords.heading);
 
@@ -101,10 +103,12 @@ function ExampleApp() {
         accuracyCircle.setStyle({ color: 'gray' });
         if (map.hasLayer(blueDotMarker)) {
           blueDotMarker.remove();
+          redDotMarker.remove();
         }
       } else {
         accuracyCircle.setStyle({ color: 'blue' });
         if (!map.hasLayer(blueDotMarker)) {
+          redDotMarker.addTo(map);
           blueDotMarker.addTo(map);
         }
       }
@@ -113,6 +117,13 @@ function ExampleApp() {
     if (!accuracyCircle) {
       // first location
       accuracyCircle = L.circle([0,0], { radius: 1, opacity: 0 });
+      redDotMarker = L.marker([0,0], {
+        icon: L.icon({
+          iconUrl: 'img/red_dot.png',
+          iconSize: [60, 60],
+          iconAnchor: [30, 30]
+        })
+      });
       blueDotMarker = L.marker([0,0], {
         icon: L.icon({
           iconUrl: 'img/blue_dot.png',
@@ -124,12 +135,19 @@ function ExampleApp() {
       setBlueDotProperties();
 
       accuracyCircle.addTo(map);
+      redDotMarker.addTo(map);
       blueDotMarker.addTo(map);
 
       var ZOOM_LEVEL = 19;
       map.setView(center, ZOOM_LEVEL);
     } else {
       setBlueDotProperties();
+    }
+  };
+
+  this.onHeadingChanged = function(heading) {
+    if (redDotMarker) {
+      redDotMarker.setRotationAngle(heading);
     }
   };
 
@@ -225,6 +243,10 @@ var cordovaAndIaController = {
     this.regionWatchId = IndoorAtlas.watchRegion(
       app.onEnterRegion.bind(app),
       app.onExitRegion.bind(app), onError);
+
+    IndoorAtlas.didUpdateHeading(function (heading) {
+      app.onHeadingChanged(heading.trueHeading);
+    });
 
     app.onPositioningStarted();
   },
