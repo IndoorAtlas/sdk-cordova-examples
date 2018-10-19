@@ -25,7 +25,6 @@
 
 // can hide an show multiple floor plans on a map
 function FloorPlanView(map) {
-  var layers = {};
   var visibleFloorPlans = {};
   var that = this;
 
@@ -43,25 +42,12 @@ function FloorPlanView(map) {
   this.show = function(floorPlan) {
     var id = floorPlan.id;
     if (visibleFloorPlans[id]) return;
-    visibleFloorPlans[id] = true;
-
-    if (layers[id]) {
-      layers[id].addTo(map);
-    } else {
-      if (!layers[id]) {
-        layers[id] = buildImageOverlay(floorPlan);
-      }
-      if (visibleFloorPlans[id]) {
-        layers[id].addTo(map);
-      }
-    }
+    visibleFloorPlans[id] = buildImageOverlay(floorPlan).addTo(map);
   };
 
   function hideById(id) {
     if (!visibleFloorPlans[id]) return;
-    if (layers[id]) {
-      layers[id].remove();
-    }
+    visibleFloorPlans[id].remove();
     delete visibleFloorPlans[id];
   };
 
