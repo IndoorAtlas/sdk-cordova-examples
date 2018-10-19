@@ -28,3 +28,10 @@ Build the project and run it
 cordova build
 cordova run
 ```
+
+## Wayfinding
+
+Before using wayfinding part of the example, you need to [create a wayfinding graph](https://docs.indooratlas.com/manage/wayfinding/) on https://app.indooratlas.com.
+
+You can select a destination by pressing the screen. The route is updated to start from the
+current location of you whenever a new location is obtained from the IndoorAtlas platform.
