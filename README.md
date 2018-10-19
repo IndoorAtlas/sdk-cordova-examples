@@ -12,13 +12,11 @@ is available at https://docs.indooratlas.com/cordova.
 
 ## Select an example
 
-This repository contains two different example projects.
-
- 1. [Google Maps example with IndoorAtlas Wayfinding](https://github.com/IndoorAtlas/sdk-cordova-examples/blob/master/CordovaExamples/README.md)
- 2. [Leaflet example with optional Mapbox maps](https://github.com/IndoorAtlas/sdk-cordova-examples/blob/master/LeafletExample/README.md)
+This repository contains one main example: [Leaflet example with optional Mapbox maps ](https://github.com/IndoorAtlas/sdk-cordova-examples/blob/master/LeafletExample/README.md).
+It demonstrates the use of IndoorAtlas positioning and wayfinding.
 
 In addition, the [Snippets folder](https://github.com/IndoorAtlas/sdk-cordova-examples/blob/master/Snippets) contains partial code examples demonstrating the basics of the plugin.
 
 ## License
 
-Copyright 2015-2017 IndoorAtlas Ltd. The Cordova Plugin is released under the Apache License. See the [LICENSE.md](https://github.com/IndoorAtlas/sdk-cordova-examples/blob/master/LICENSE) file for details.
+Copyright 2015-2018 IndoorAtlas Ltd. The Cordova Plugin is released under the Apache License. See the [LICENSE.md](https://github.com/IndoorAtlas/sdk-cordova-examples/blob/master/LICENSE) file for details.
