@@ -41,5 +41,4 @@
     <engine name="android" spec="^6.3.0" />
     <plugin name="cordova-plugin-whitelist" spec="^1.3.3" />
     <plugin name="cordova-plugin-indooratlas" spec="git+https://github.com/IndoorAtlas/cordova-plugin.git#beta" />
-    <plugin name="cordova-plugin-file" spec="^6.0.1" />
 </widget>

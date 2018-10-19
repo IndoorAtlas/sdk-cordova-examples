@@ -53,7 +53,6 @@ function ExampleApp() {
   var lastPosition = null;
   var wayfindingController = null;
   var blueDotMarker = null;
-  var redDotMarker = null;
   var wayfindingController = new WayfindingController(map);
 
   this.onFloorChange = function () {
@@ -74,7 +73,6 @@ function ExampleApp() {
           event.latlng.lng,
           floor);
       }
-      IndoorAtlas.lockIndoors(true); // also lock indoors on click
     });
 
     wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
@@ -94,21 +92,17 @@ function ExampleApp() {
       accuracyCircle.setLatLng(center);
       accuracyCircle.setRadius(position.coords.accuracy);
 
-      redDotMarker.setLatLng(center);
       blueDotMarker.setLatLng(center);
-      blueDotMarker.setRotationAngle(position.coords.heading);
 
       if (floorPlanSelector.getFloorNumber() !== position.coords.floor) {
 
         accuracyCircle.setStyle({ color: 'gray' });
         if (map.hasLayer(blueDotMarker)) {
           blueDotMarker.remove();
-          redDotMarker.remove();
         }
       } else {
         accuracyCircle.setStyle({ color: 'blue' });
         if (!map.hasLayer(blueDotMarker)) {
-          redDotMarker.addTo(map);
           blueDotMarker.addTo(map);
         }
       }
@@ -117,13 +111,6 @@ function ExampleApp() {
     if (!accuracyCircle) {
       // first location
       accuracyCircle = L.circle([0,0], { radius: 1, opacity: 0 });
-      redDotMarker = L.marker([0,0], {
-        icon: L.icon({
-          iconUrl: 'img/red_dot.png',
-          iconSize: [60, 60],
-          iconAnchor: [30, 30]
-        })
-      });
       blueDotMarker = L.marker([0,0], {
         icon: L.icon({
           iconUrl: 'img/blue_dot.png',
@@ -135,7 +122,6 @@ function ExampleApp() {
       setBlueDotProperties();
 
       accuracyCircle.addTo(map);
-      redDotMarker.addTo(map);
       blueDotMarker.addTo(map);
 
       var ZOOM_LEVEL = 19;
@@ -146,8 +132,8 @@ function ExampleApp() {
   };
 
   this.onHeadingChanged = function(heading) {
-    if (redDotMarker) {
-      redDotMarker.setRotationAngle(heading);
+    if (blueDotMarker) {
+      blueDotMarker.setRotationAngle(heading);
     }
   };
 
@@ -173,7 +159,6 @@ function ExampleApp() {
       console.log("wayfinding finished!");
       wayfindingController.hideRoute();
       cordovaAndIaController.removeWayfindingUpdates();
-      IndoorAtlas.lockIndoors(false); // also release indoor lock when stopping WF
     }
   };
 }
