@@ -31,16 +31,6 @@ function FloorPlanSelector(map, onFloorChange) {
   var that = this;
   var lockedFloor = null;
 
-  function getVenue(id) {
-    var VENUE_API_ENDPOINT = 'https://positioning-api.indooratlas.com/v1';
-    // note: the API key needs to have the Positioning API scope enabled
-    // or the floor plan selector UI will not be displayed
-    var venueUrl = VENUE_API_ENDPOINT + '/venues/' + id + '?key=' + IA_API_KEY;
-    return new Promise((resolve, reject) => {
-      $.getJSON(venueUrl, data => resolve(data)).fail(reject);
-    });
-  }
-
   function findCurrentFloorPlanIndex() {
     if (!currentVenue && !currentFloorPlan) return -1;
     var fps = currentVenue.floorPlans;
