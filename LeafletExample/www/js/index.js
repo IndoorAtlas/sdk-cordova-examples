@@ -49,58 +49,116 @@ function ExampleApp() {
     zoomOngoing = false;
   });
 
-  var currentFloorPlanId = null;
-  var floorPlanView = new FloorPlanView(map);
   var accuracyCircle = null;
+  var lastPosition = null;
+  var wayfindingController = null;
+  var blueDotMarker = null;
+  var wayfindingController = new WayfindingController(map);
+
+  this.onFloorChange = function () {
+    console.log("floorChange");
+    if (lastPosition) this.onLocationChanged(lastPosition);
+    if (wayfindingController) {
+      wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
+    }
+  };
+
+  this.onPositioningStarted = function () {
+    map.on('mouseup', function (event) {
+      // tap routes to pressed location
+      var floor = floorPlanSelector.getFloorNumber();
+      if (floor !== null) {
+        cordovaAndIaController.requestWayfindingUpdates(
+          event.latlng.lat,
+          event.latlng.lng,
+          floor);
+      }
+    });
+
+    wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
+  }
+
+  var floorPlanSelector = new FloorPlanSelector(map, this.onFloorChange.bind(this));
 
   this.onLocationChanged = function(position) {
+    lastPosition = position;
+
     // updating graphics while zooming does not work in Leaflet
     if (zoomOngoing) return;
 
     var center = [position.coords.latitude, position.coords.longitude];
 
-    function setCircleProperties() {
+    function setBlueDotProperties() {
       accuracyCircle.setLatLng(center);
       accuracyCircle.setRadius(position.coords.accuracy);
+
+      blueDotMarker.setLatLng(center);
+
+      if (floorPlanSelector.getFloorNumber() !== position.coords.floor) {
+
+        accuracyCircle.setStyle({ color: 'gray' });
+        if (map.hasLayer(blueDotMarker)) {
+          blueDotMarker.remove();
+        }
+      } else {
+        accuracyCircle.setStyle({ color: 'blue' });
+        if (!map.hasLayer(blueDotMarker)) {
+          blueDotMarker.addTo(map);
+        }
+      }
     }
 
     if (!accuracyCircle) {
       // first location
-      accuracyCircle = L.circle([0,0], {radius: 1});
-      setCircleProperties();
+      accuracyCircle = L.circle([0,0], { radius: 1, opacity: 0 });
+      blueDotMarker = L.marker([0,0], {
+        icon: L.icon({
+          iconUrl: 'img/blue_dot.png',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        })
+      });
+
+      setBlueDotProperties();
+
       accuracyCircle.addTo(map);
+      blueDotMarker.addTo(map);
 
       var ZOOM_LEVEL = 19;
       map.setView(center, ZOOM_LEVEL);
     } else {
-      setCircleProperties();
+      setBlueDotProperties();
+    }
+  };
+
+  this.onHeadingChanged = function(heading) {
+    if (blueDotMarker) {
+      blueDotMarker.setRotationAngle(heading);
     }
   };
 
   this.onEnterRegion = function(region) {
     if (region.regionType == Region.TYPE_FLOORPLAN) {
-
-      currentFloorPlanId = region.regionId;
-      console.log("enter floor plan "+currentFloorPlanId);
-      floorPlanView.showAndHideOthers(currentFloorPlanId);
-
-    } else if (region.regionType == Region.TYPE_VENUE) {
-      console.log("enter venue "+region.regionId);
+      floorPlanSelector.onEnterFloorPlan(region.floorPlan);
+    } else if (region.regionType == Region.TYPE_VENUE && region.venue) {
+      floorPlanSelector.onEnterVenue(region.venue);
     }
   };
 
   this.onExitRegion = function(region) {
     if (region.regionType == Region.TYPE_FLOORPLAN) {
-      console.log("exit floor plan");
-      currentFloorPlanId = null;
+      floorPlanSelector.onExitFloorPlan();
+    }  else if (region.regionType == Region.TYPE_VENUE) {
+      floorPlanSelector.onExitVenue();
+    }
+  };
 
-      setTimeout(function () {
-        // don't hide immediately if the callback is followed by
-        // another enter floor plan event
-        if (!currentFloorPlanId) {
-          floorPlanView.hideAll();
-        }
-      }, 100);
+  this.onWayfindingUpdate = function(route) {
+    wayfindingController.updateRoute(route);
+    if (wayfindingController.routeFinished()) {
+      console.log("wayfinding finished!");
+      wayfindingController.hideRoute();
+      cordovaAndIaController.removeWayfindingUpdates();
     }
   };
 }
@@ -121,9 +179,6 @@ var cordovaAndIaController = {
 
   // deviceready Event Handler
   onDeviceReady: function() {
-    if (!window.Promise) {
-      window.Promise = IAPromise;
-    }
     this.configureIA();
   },
 
@@ -173,6 +228,27 @@ var cordovaAndIaController = {
     this.regionWatchId = IndoorAtlas.watchRegion(
       app.onEnterRegion.bind(app),
       app.onExitRegion.bind(app), onError);
+
+    IndoorAtlas.didUpdateHeading(function (heading) {
+      app.onHeadingChanged(heading.trueHeading);
+    });
+
+    app.onPositioningStarted();
+  },
+
+  requestWayfindingUpdates: function(latitude, longitude, floor) {
+    console.log("set/changed wayfinding destination");
+    var onError = this.IAServiceFailed.bind(this);
+    IndoorAtlas.requestWayfindingUpdates({
+      latitude: latitude,
+      longitude: longitude,
+      floor: floor
+    }, app.onWayfindingUpdate.bind(app), onError);
+  },
+
+  removeWayfindingUpdates: function() {
+    console.log("stop wayfinding");
+    IndoorAtlas.removeWayfindingUpdates();
   }
 };
 
