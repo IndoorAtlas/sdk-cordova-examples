@@ -22,7 +22,7 @@
         <icon density="xhdpi" src="www/img/android/xhdpi.png" />
         <icon density="xxhdpi" src="www/img/android/xxhdpi.png" />
         <icon density="xxxhdpi" src="www/img/android/xxxhdpi.png" />
-        <preference name="android-minSdkVersion" value="19" />
+        <preference name="android-minSdkVersion" value="21" />
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />
