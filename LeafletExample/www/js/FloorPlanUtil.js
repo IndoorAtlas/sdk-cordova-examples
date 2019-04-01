@@ -49,11 +49,11 @@ function FloorPlanView(map) {
     if (!visibleFloorPlans[id]) return;
     visibleFloorPlans[id].remove();
     delete visibleFloorPlans[id];
-  };
+  }
 
   this.hide = function(floorPlan) {
     hideById(floorPlan.id);
-  }
+  };
 
   this.showAndHideOthers = function (floorPlan) {
     var id = floorPlan.id;
@@ -72,5 +72,5 @@ function FloorPlanView(map) {
     for (var fpId in visibleFloorPlans) {
       hideById(fpId);
     }
-  }
+  };
 }
