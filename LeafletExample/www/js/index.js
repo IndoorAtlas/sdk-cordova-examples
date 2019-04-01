@@ -24,7 +24,6 @@
 */
 
 function ExampleApp() {
-
   var map = L.map('map', {
     zoomControl: false
   }).fitWorld();
@@ -64,23 +63,23 @@ function ExampleApp() {
     }
   };
 
-  this.onPositioningStarted = function () {
-    map.on('mouseup', function (event) {
-      // tap routes to pressed location
-      var floor = floorPlanSelector.getFloorNumber();
-      if (floor !== null) {
-        cordovaAndIaController.requestWayfindingUpdates(
-          event.latlng.lat,
-          event.latlng.lng,
-          floor);
-      }
-      IndoorAtlas.lockIndoors(true); // also lock indoors on click
-    });
-
-    wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
-  }
-
   var floorPlanSelector = new FloorPlanSelector(map, this.onFloorChange.bind(this));
+
+  var self = this;
+  map.on('mouseup', function (event) {
+    // tap routes to pressed location
+    var floor = floorPlanSelector.getFloorNumber();
+    if (floor !== null) {
+      IndoorAtlas.requestWayfindingUpdates({
+        latitude: event.latlng.lat,
+        longitude: event.latlng.lng,
+        floor: floor
+      }, self.onWayfindingUpdate.bind(self));
+    }
+    IndoorAtlas.lockIndoors(true); // also lock indoors on click
+  });
+
+  wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
 
   this.onLocationChanged = function(position) {
     lastPosition = position;
@@ -147,23 +146,7 @@ function ExampleApp() {
 
   this.onHeadingChanged = function(heading) {
     if (redDotMarker) {
-      redDotMarker.setRotationAngle(heading);
-    }
-  };
-
-  this.onEnterRegion = function(region) {
-    if (region.regionType == Region.TYPE_FLOORPLAN) {
-      floorPlanSelector.onEnterFloorPlan(region.floorPlan);
-    } else if (region.regionType == Region.TYPE_VENUE && region.venue) {
-      floorPlanSelector.onEnterVenue(region.venue);
-    }
-  };
-
-  this.onExitRegion = function(region) {
-    if (region.regionType == Region.TYPE_FLOORPLAN) {
-      floorPlanSelector.onExitFloorPlan();
-    }  else if (region.regionType == Region.TYPE_VENUE) {
-      floorPlanSelector.onExitVenue();
+      redDotMarker.setRotationAngle(heading.trueHeading);
     }
   };
 
@@ -172,100 +155,29 @@ function ExampleApp() {
     if (wayfindingController.routeFinished()) {
       console.log("wayfinding finished!");
       wayfindingController.hideRoute();
-      cordovaAndIaController.removeWayfindingUpdates();
+      IndoorAtlas.removeWayfindingUpdates();
       IndoorAtlas.lockIndoors(false); // also release indoor lock when stopping WF
     }
   };
+
+  IndoorAtlas.initialize({ apiKey: IA_API_KEY })
+    .watchPosition(this.onLocationChanged.bind(this))
+    .watchFloorPlan(floorPlanSelector.onFloorPlanChange.bind(floorPlanSelector))
+    .watchVenue(floorPlanSelector.onVenueChange.bind(floorPlanSelector))
+    .watchOrientation(this.onHeadingChanged.bind(this))
+    .onStatusChanged(console.log)
+    .getTraceId(console.log);
+
+  // uncomment to auto-stop after 15 seconds
+  /*setTimeout(function () {
+    IndoorAtlas.removeStatusCallback()
+      .clearFloorPlanWatch()
+      .clearVenueWatch()
+      .clearOrientationWatch()
+      .clearWatch();
+  }, 15000);*/
 }
 
-var cordovaAndIaController = {
-  watchId: null,
-  regionWatchId: null,
-
-  // Application Constructor
-  initialize: function() {
-    this.bindEvents();
-  },
-
-  // Bind Cordova Event Listeners
-  bindEvents: function() {
-    document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
-  },
-
-  // deviceready Event Handler
-  onDeviceReady: function() {
-    this.configureIA();
-  },
-
-  // Configure IndoorAtlas SDK with API Key
-  configureIA: function() {
-    var _config = {key : IA_API_KEY, secret : IA_API_SECRET};
-    IndoorAtlas.onStatusChanged(this.onStatusChanged.bind(this), alert);
-    IndoorAtlas.initialize(
-      this.IAServiceConfigured.bind(this),
-      this.IAServiceFailed.bind(this), _config);
-  },
-
-  onStatusChanged: function (status) {
-    console.log("status changed: "+status.message);
-    if (status.code === CurrentStatus.STATUS_OUT_OF_SERVICE) {
-      alert("Unrecoverable error: "+status.message);
-    }
-  },
-
-  IAServiceFailed: function (result) {
-    // Try again to initialize the service
-    console.warn("IAServiceFailed, trying again: "+JSON.stringify(result));
-    setTimeout(this.configureIA.bind(this), 2*1000);
-  },
-
-  IAServiceConfigured: function() {
-    console.log("IA configured");
-    this.startPositioning();
-  },
-
-  startPositioning: function() {
-    console.log("starting positioning");
-
-    var onError = this.IAServiceFailed.bind(this);
-
-    // watch position
-    if (this.watchId != null) {
-      IndoorAtlas.clearWatch(this.watchId);
-    }
-    this.watchId = IndoorAtlas.watchPosition(
-      app.onLocationChanged.bind(app), onError);
-
-    // watch region
-    if (this.regionWatchId != null) {
-      IndoorAtlas.clearRegionWatch(this.regionWatchId);
-    }
-    this.regionWatchId = IndoorAtlas.watchRegion(
-      app.onEnterRegion.bind(app),
-      app.onExitRegion.bind(app), onError);
-
-    IndoorAtlas.didUpdateHeading(function (heading) {
-      app.onHeadingChanged(heading.trueHeading);
-    });
-
-    app.onPositioningStarted();
-  },
-
-  requestWayfindingUpdates: function(latitude, longitude, floor) {
-    console.log("set/changed wayfinding destination");
-    var onError = this.IAServiceFailed.bind(this);
-    IndoorAtlas.requestWayfindingUpdates({
-      latitude: latitude,
-      longitude: longitude,
-      floor: floor
-    }, app.onWayfindingUpdate.bind(app), onError);
-  },
-
-  removeWayfindingUpdates: function() {
-    console.log("stop wayfinding");
-    IndoorAtlas.removeWayfindingUpdates();
-  }
-};
-
-cordovaAndIaController.initialize();
-var app = new ExampleApp();
+document.addEventListener('deviceready', function () {
+  new ExampleApp();
+}, false);
