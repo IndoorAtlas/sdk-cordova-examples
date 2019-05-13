@@ -14,15 +14,24 @@ Get a Mapbox access token from https://mapbox.com.
 It is also possible to run this example without a Mabox access token, in which
 case no outdoor map is shown under the floor plan images.
 
-For iOS add
+### iOS
+
+Add iOS platform
 ```
 cordova platform add https://github.com/apache/cordova-ios.git#4.4.0-ios-sim
 ```
-and Android
+Open project in XCode
+```
+open platforms/ios/IACordova.xcworkspace
+```
+and build using XCode.
+
+### Android
+
+Add Android platform
 ```
 cordova platform add android
 ```
-
 Build the project and run it
 ```
 cordova build
