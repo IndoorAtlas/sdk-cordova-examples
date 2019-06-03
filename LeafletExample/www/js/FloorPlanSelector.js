@@ -67,26 +67,23 @@ function FloorPlanSelector(map, onFloorChange) {
   this.getFloorNumber = function () {
     if (!currentFloorPlan) return null;
     return currentFloorPlan.floorLevel;
-  }
-
-  this.onEnterFloorPlan = function (floorPlan) {
-    console.log("enter floor plan "+floorPlan.id);
-    setCurrentFloorPlan(floorPlan);
   };
 
-  this.onExitFloorPlan = function () {
-    currentFloorPlan = null;
-
-    setTimeout(function () {
-      // don't hide immediately if the callback is followed by
-      // another enter floor plan event
-      if (!currentFloorPlan) {
+  this.onFloorPlanChange = function (floorPlan) {
+    if (floorPlan) {
+      console.log("enter floor plan "+floorPlan.id);
+      setCurrentFloorPlan(floorPlan);
+    } else {
+      console.log("exit floor plan");
         floorPlanView.hideAll();
-      }
-    }, 100);
+    }
   };
 
-  this.onEnterVenue = function (venue) {
+  this.onVenueChange = function (venue) {
+    if (!venue) {
+      $("#floor-selector").addClass("hidden");
+      return;
+    }
     currentVenue = venue;
     console.log("enter venue "+venue.id);
     if (currentVenue.floorPlans.length > 1) {
@@ -97,9 +94,5 @@ function FloorPlanSelector(map, onFloorChange) {
     } else {
       console.log("not showing floor selector for a single-floor venue");
     }
-  };
-
-  this.onExitVenue = function () {
-    $("#floor-selector").addClass("hidden");
   };
 }
