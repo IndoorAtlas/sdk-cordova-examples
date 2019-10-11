@@ -87,12 +87,14 @@ function ExampleApp() {
     if (zoomOngoing) return;
 
     var center = [position.coords.latitude, position.coords.longitude];
+    var rotationAngle = position.coords.heading;
 
     function setBlueDotProperties() {
       accuracyCircle.setLatLng(center);
       accuracyCircle.setRadius(position.coords.accuracy);
 
       blueDotMarker.setLatLng(center);
+      blueDotMarker.setRotationAngle(rotationAngle);
 
       if (floorPlanSelector.getFloorNumber() !== position.coords.floor) {
 
