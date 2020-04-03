@@ -13,7 +13,7 @@ is available at https://docs.indooratlas.com/cordova.
 ## Select an example
 
 This repository contains one main example: [Leaflet example with optional Mapbox maps ](https://github.com/IndoorAtlas/sdk-cordova-examples/blob/master/LeafletExample/README.md).
-It demonstrates the use of IndoorAtlas positioning and wayfinding.
+It demonstrates the use of IndoorAtlas positioning and wayfinding, and geofence monitoring.
 
 In addition, the [Snippets folder](https://github.com/IndoorAtlas/sdk-cordova-examples/blob/master/Snippets) contains partial code examples demonstrating the basics of the plugin.
 

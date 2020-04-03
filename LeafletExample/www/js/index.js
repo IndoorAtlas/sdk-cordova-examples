@@ -53,12 +53,15 @@ function ExampleApp() {
   var wayfindingController = null;
   var blueDotMarker = null;
   var wayfindingController = new WayfindingController(map);
+  var geofenceController = new GeofenceController(map);
 
   this.onFloorChange = function () {
-    console.log("floorChange");
     if (lastPosition) this.onLocationChanged(lastPosition);
     if (wayfindingController) {
       wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
+    }
+    if (geofenceController) {
+      geofenceController.setCurrentFloor(floorPlanSelector.getFloorNumber());
     }
   };
 
@@ -79,6 +82,10 @@ function ExampleApp() {
   });
 
   wayfindingController.setCurrentFloor(floorPlanSelector.getFloorNumber());
+
+  this.onTriggeredGeofences = function(transitionType, geofence) {
+    geofenceController.updateTriggeredGeofences(transitionType, geofence);
+  };
 
   this.onLocationChanged = function(position) {
     lastPosition = position;
@@ -147,6 +154,8 @@ function ExampleApp() {
     .watchPosition(this.onLocationChanged.bind(this))
     .watchFloorPlan(floorPlanSelector.onFloorPlanChange.bind(floorPlanSelector))
     .watchVenue(floorPlanSelector.onVenueChange.bind(floorPlanSelector))
+    .watchGeofences(this.onTriggeredGeofences.bind(this))
+    .lockIndoors(true)
     .onStatusChanged(console.log)
     .getTraceId(console.log);
 }
