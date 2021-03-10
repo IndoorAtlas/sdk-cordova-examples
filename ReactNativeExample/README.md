@@ -72,7 +72,7 @@ Add react-native-indooratlas dependency to package.json:
 Update dependencies:
 
 ```
-yarn install`.
+yarn install
 ```
 
 ## iOS
