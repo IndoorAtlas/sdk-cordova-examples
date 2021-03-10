@@ -3,3 +3,4 @@ platforms/
 plugins/
 package-lock.json
 yarn.lock
+Podfile.lock
