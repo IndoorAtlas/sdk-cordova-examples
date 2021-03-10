@@ -46,7 +46,13 @@ open ReactNativeExample.xcworkspace
 ### Android
 
 Get a Google maps API key from https://developers.google.com/maps/documentation/android-sdk/get-api-key
-Add it to `android/local.properties`.
+Edit `android/app/src/main/AndroidManifest.xml` and replace `MAPS_API_KEY` with correct value:
+
+```
+<meta-data                                                                                                                                                                                                                                                                                      
+    android:name="com.google.android.geo.API_KEY"                                                                                                                                                                                                                                                 
+    android:value="MAPS_API_KEY" />    
+```
 
 Build and run:
 

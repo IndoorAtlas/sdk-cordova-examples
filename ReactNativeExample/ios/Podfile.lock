@@ -72,7 +72,7 @@ PODS:
   - OpenSSL-Universal/Static (1.0.2.20)
   - RCTCordova (1.1.1):
     - React-Core
-  - RCTIndoorAtlas (3.4.0):
+  - RCTIndoorAtlas (3.4.1):
     - RCTCordova
   - RCTRequired (0.63.4)
   - RCTTypeSafety (0.63.4):
@@ -451,7 +451,7 @@ SPEC CHECKSUMS:
   glog: 40a13f7840415b9a77023fbcae0f1e6f43192af3
   OpenSSL-Universal: ff34003318d5e1163e9529b08470708e389ffcdd
   RCTCordova: ce8a7d8ae51b84e20a64af3437ac2fcbce4ace3a
-  RCTIndoorAtlas: 549f3fa457b7bc23ca8408c4feadc99d93e47c1d
+  RCTIndoorAtlas: fe463bda4afe4963e3d2d33f134c77726e70d010
   RCTRequired: 082f10cd3f905d6c124597fd1c14f6f2655ff65e
   RCTTypeSafety: 8c9c544ecbf20337d069e4ae7fd9a377aadf504b
   React: b0a957a2c44da4113b0c4c9853d8387f8e64e615
@@ -476,6 +476,6 @@ SPEC CHECKSUMS:
   Yoga: 4bd86afe9883422a7c4028c00e34790f560923d6
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 81e55c28b56e5a1adf4ba1e3be6395feda38afee
+PODFILE CHECKSUM: 459b4b0e818bcf22e9fbf5c56e322e44f799a4ce
 
 COCOAPODS: 1.10.1
