@@ -129,7 +129,7 @@ implementation project(':react-native-indooratlas')
 Add IndoorAtlas SDK repository to `android/build.gradle`
 
 ```
-maven {                                                                                                                                                                                                                                                                                     > 
-    url "https://indooratlas-ltd.bintray.com/mvn-public/"                                                                                                                                                                                                                                   > 
-} 
+maven {
+    url "https://dl.cloudsmith.io/public/indooratlas/mvn-public/maven/"
+}
 ```
