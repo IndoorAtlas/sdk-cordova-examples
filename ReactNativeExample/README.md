@@ -133,3 +133,22 @@ maven {
     url "https://dl.cloudsmith.io/public/indooratlas/mvn-public/maven/"
 }
 ```
+
+Add `RCTIndoorAtlasPackage` to to package list in your `MainApplication.java`
+
+```
+// ...
+import com.ialocation.plugin.RCTIndoorAtlasPackage;
+
+// ...
+  private final ReactNativeHost mReactNativeHost =
+      new ReactNativeHost(this) {
+
+// ...
+        @Override
+        protected List<ReactPackage> getPackages() {
+          List<ReactPackage> packages = new PackageList(this).getPackages();
+          packages.add(new RCTIndoorAtlasPackage());
+          return packages;
+        }
+```
