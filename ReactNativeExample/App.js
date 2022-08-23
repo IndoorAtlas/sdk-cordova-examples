@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View, PermissionsAndroid } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import IndoorAtlas from 'react-native-indooratlas';
 
@@ -25,11 +25,6 @@ export default class App extends Component<Props> {
   }
 
   UNSAFE_componentWillMount() {
-    if (Platform.OS === 'android') {
-        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then(result => {
-          console.log('Permission: ' + result);
-        });
-    }
     // start positioning
     IndoorAtlas.initialize({ apiKey: IA_API_KEY })
      .watchPosition(position => {

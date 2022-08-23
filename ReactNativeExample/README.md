@@ -99,16 +99,7 @@ pod install
 
 For additional info, see https://indooratlas.freshdesk.com/support/solutions/articles/36000050564-setup-positioning-sdk-with-android
 
-Make sure to request the location permission:
-```
-import { Platform, PermissionsAndroid } from 'react-native';
-// ...
-if (Platform.OS === 'android') {
-  PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then(result => {
-    console.log('Permission: ' + result);
-  });
-}
-```
+Note that only targetSdkVersion >= 31 is supported by the React Native plugin.
 
 Add projects to `android/settings.gradle`:
 
@@ -134,7 +125,7 @@ maven {
 }
 ```
 
-Add `RCTIndoorAtlasPackage` to to package list in your `MainApplication.java`
+Add `RCTIndoorAtlasPackage` to package list in your `MainApplication.java`
 
 ```
 // ...
