@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "@remobile/react-native-cordova": "^1.1.1",
-    "react": "16.13.1",
-    "react-native": "0.63.4",
+    "react": "17.0.2",
+    "react-native": "0.65.3",
     "react-native-indooratlas": "git+https://github.com/IndoorAtlas/cordova-plugin.git#react-native",
-    "react-native-maps": "^0.27.1"
+    "react-native-maps": "^0.31.1"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
@@ -24,6 +24,7 @@
     "eslint": "^6.5.1",
     "jest": "^25.1.0",
     "metro-react-native-babel-preset": "^0.59.0",
+    "react-native-codegen": "^0.0.7",
     "react-test-renderer": "16.13.1"
   },
   "jest": {
