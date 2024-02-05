@@ -25,12 +25,3 @@ target 'ReactNativeExample' do
   pod 'RCTCordova', :path => '../node_modules/@remobile/react-native-cordova/ios'
   pod 'RCTIndoorAtlas', :path => '../node_modules/react-native-indooratlas/src/ios'
 end
-
-target 'ReactNativeExample-tvOS' do
-  # Pods for ReactNativeExample-tvOS
-
-  target 'ReactNativeExample-tvOSTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-end
