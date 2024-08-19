@@ -19,7 +19,7 @@ cd sdk-cordova-examples/ReactNativeExample
 Install dependencies:
 
 ```
-yarn install
+npm install
 ```
 
 Set your IndoorAtlas API key (`IA_API_KEY`) in `App.js`. API keys can be generated at https://app.indooratlas.com/apps.
@@ -72,7 +72,7 @@ Add react-native-indooratlas dependency to package.json:
 Update dependencies:
 
 ```
-yarn install
+npm install
 ```
 
 ## iOS
