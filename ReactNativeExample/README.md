@@ -5,7 +5,7 @@ If you are not familiar with IndoorAtlas start here: https://docs.indooratlas.co
 
 ## Requirements
 
-React.Native development environment. See https://reactnative.dev/docs/environment-setup
+React.Native development environment. See [https://reactnative.dev/docs/environment-setup](https://reactnative.dev/docs/set-up-your-environment)
 
 ## Setting up
 
