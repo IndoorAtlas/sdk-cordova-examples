@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import IndoorAtlas from 'react-native-indooratlas';
+import { IndoorAtlas, WayfindingTags } from 'react-native-indooratlas';
 import MapView, { Marker, Overlay, Polyline } from 'react-native-maps';
 
 const IA_API_KEY = 'YOUR IndoorAtlas API KEY HERE';
@@ -225,6 +225,7 @@ export default class App extends Component<Props> {
     console.log('POI Clicked', `You clicked on ${poi.name}`);
 
     const destination = { latitude: poi.latitude, longitude: poi.longitude, floor: poi.floor };
+    //destination.tags = WayfindingTags.EXCLUDE_INACCESSIBLE;
 
     this.setState({ logMessage: 'Starting wayfinding to :' + poi.name });
     

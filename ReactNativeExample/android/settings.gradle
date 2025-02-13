@@ -1,5 +1,11 @@
 rootProject.name = 'ReactNativeExample'
+
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
+
+includeBuild("../node_modules/@react-native/gradle-plugin")
+
+// Include your existing Gradle modules here.
+
 include ':app'
 
 include ':react-native-cordova'

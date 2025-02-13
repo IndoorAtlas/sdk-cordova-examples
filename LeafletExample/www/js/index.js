@@ -76,6 +76,7 @@ function ExampleApp() {
         latitude: event.latlng.lat,
         longitude: event.latlng.lng,
         floor: floor
+        //tags: IndoorAtlas.WayfindingTags.EXCLUDE_ACCESSIBLE_ONLY
       }, self.onWayfindingUpdate.bind(self));
     }
     IndoorAtlas.lockIndoors(true); // also lock indoors on click
