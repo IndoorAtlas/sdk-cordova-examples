@@ -18,7 +18,7 @@ case no outdoor map is shown under the floor plan images.
 
 Add Android platform
 ```
-cordova platform add android@^12.0.1
+cordova platform add android@^14.0.1
 ```
 Build the project and run it
 ```
@@ -30,7 +30,7 @@ cordova run
 
 Add iOS platform
 ```
-cordova platform add ios@^7.0.1
+cordova platform add ios@^7.1.1
 ```
 Open project in XCode
 ```
